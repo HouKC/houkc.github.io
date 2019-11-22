@@ -7,7 +7,7 @@ description: "Just keep moving!"
 keyword: "HouKC, HouKC's Blog, 垲程的博客, HouKC, 侯垲程"
 url: "https://houkc.github.io"          # your host, for absolute URL
 baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
-github_repo: "https://github.com/HouKC/HouKC.github.io" # you code repository
+github_repo: "https://github.com/HouKC/houkc.github.io" # you code repository
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
@@ -64,7 +64,7 @@ gitalk:
   enable: true    #是否开启Gitalk评论
   clientID: b092e13156e757e3e96b                            #生成的clientID
   clientSecret: d23f1ad21e9a92877cf3e7d5e533a2b3fce1f8c0    #生成的clientSecret
-  repo: HouKC.github.io    #仓库名称
+  repo: houkc.github.io    #仓库名称
   owner: HouKC    #github用户名
   admin: HouKC
   distractionFreeMode: true #是否启用类似FB的阴影遮罩
