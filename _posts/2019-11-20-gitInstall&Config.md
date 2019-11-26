@@ -9,7 +9,6 @@ catalog:    true
 tags:
     - git
     - windows
-    - 博客
     - github
 ---
 
