@@ -14,7 +14,6 @@ tags:
 
 ## 前言
 
-
 在搭建了博客之后，发现用GitHub桌面版来提交代码十分慢，不如直接命令行来得快~所以直接上git。
 
 当然啦，git还有很多功能，这里就不多赘述，先说说怎么安装和配置。
@@ -42,7 +41,7 @@ tags:
 
 安装完成可以在开始菜单-所有程序-Git文件夹下看到三个程序：Git Bash，Git CMD，Git GUI。
 
-Bash风格是Linux，CMD就是windows命令行，GUI是界面不推荐使用。在windows下操作Git比较推荐用CMD，当然也可以直接打开命令行操作git。
+Bash风格是Linux，CMD就是windows命令行，GUI是界面不推荐使用。在windows下操作Git比较推荐用CMD和BASH，当然也可以直接打开命令行操作git。
 
 打开CMD，输入以下命令，即可查看配置
 ```
