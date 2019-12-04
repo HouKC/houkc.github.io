@@ -1,37 +1,19 @@
 ---
 layout:     post
-title:      git安装与配置（下）
-subtitle:   windows下安装git，并且配置其提交到GitHub项目
+title:      git基础知识和常用命令
+subtitle:   简单介绍一下git的架构和组成，列举常用命令。
 date:       2019-12-03
 author:     HouKC
 header-img: img/post-bg-coffee.jpeg
 catalog:    true
 tags:
     - git
-    - windows
     - github
 ---
 
 ## 前言
+我用git和GitHub来做版本控制和代码仓库管理，这里就简单介绍一下git的基础知识，了解一下git架构和组成，最后再稍微记录一下常用的git命令吧！
 
-紧接上回git配置，完成配置之后我们需要连接到GitHub，确保你已经申请了GitHub账号。
 
-如果你在GitHub上已有仓库，那么直接克隆下来；如果没有，可以直接在本地新建完上传上去。
-
-#### 1. 本地新建仓库
-打开一个空的文件夹（比如新建一个文件夹workspace），你将在这个文件夹下创建git配置和GitHub工程。
-
-右键打开Git Bash， 输入以下命令初始化git环境和创建工程：
-```
-git init project_name       # project_name就是你要创建的工程名，或者说仓库名
-```
-
-#### 2. 克隆远程仓库
-首先在浏览器登录你的GitHub账号，找到你的项目仓库，点击“Clone and download”，然后复制链接。
- ![clone](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommand-clone.jpg)
-打开一个空的文件夹（比如新建一个文件夹workspace），输入“git clone ”加上刚才复制的链接：
-```
-git clone xxxx      # xxxx为刚才复制的链接
-```
 ## 后记
-参考：[一个小时学会Git](https://www.cnblogs.com/best/p/7474442.html#_label0)
+参考：

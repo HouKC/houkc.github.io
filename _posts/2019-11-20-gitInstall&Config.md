@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      git安装与配置（上）
+title:      git安装与配置
 subtitle:   windows下安装git，并且配置其提交到GitHub项目
 date:       2019-11-20
 author:     HouKC
@@ -20,7 +20,8 @@ tags:
 
  ![git_logo](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitInstall%26config-logo.jpg)
 
-## 1. git安装
+## 步骤
+#### 1. git安装
 下载[Git](https://git-scm.com/downloads)对应windows版本，本文下载时git版本是2.24.0，64-bit Git For Windows Setup。
 
  ![git_downloads](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitInstall%26config-downloads.jpg)
@@ -37,7 +38,7 @@ tags:
 
 安装完finish即可。
 
-## 2. 配置
+#### 2. 配置
 
 安装完成可以在开始菜单-所有程序-Git文件夹下看到三个程序：Git Bash，Git CMD，Git GUI。
 
@@ -97,6 +98,22 @@ color.diff true                 # diff颜色配置
 alias.co checkout               # 设置别名
 git config user.name            # 获得用户名
 git config core.filemode false  # 忽略修改权限的文件
+```
+如果你在GitHub上已有仓库，那么直接克隆下来；如果没有，可以直接在本地新建完上传上去。
+#### 3. 本地新建仓库
+打开一个空的文件夹（比如新建一个文件夹workspace），你将在这个文件夹下创建git配置和GitHub工程。
+
+右键打开Git Bash， 输入以下命令初始化git环境和创建工程：
+```
+git init project_name       # project_name就是你要创建的工程名，或者说仓库名
+```
+
+#### 4. 克隆远程仓库
+首先在浏览器登录你的GitHub账号，找到你的项目仓库，点击“Clone and download”，然后复制链接。
+ ![clone](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitInstall&Config-clone.jpg)
+打开一个空的文件夹（比如新建一个文件夹workspace），输入“git clone ”加上刚才复制的链接：
+```
+git clone xxxx      # xxxx为刚才复制的链接
 ```
 
 ## 后记
