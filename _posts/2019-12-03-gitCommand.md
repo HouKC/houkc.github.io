@@ -27,4 +27,11 @@ git init project_name       # project_name就是你要创建的工程名，或�
 ```
 
 #### 2. 克隆远程仓库
-打开一个空的文件夹（比如新建一个文件夹workspace），
+首先在浏览器登录你的GitHub账号，找到你的项目仓库，点击“Clone and download”，然后复制链接。
+ ![clone](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommand-clone.jpg)
+打开一个空的文件夹（比如新建一个文件夹workspace），输入“git clone ”加上刚才复制的链接：
+```
+git clone xxxx      # xxxx为刚才复制的链接
+```
+## 后记
+参考：[一个小时学会Git](https://www.cnblogs.com/best/p/7474442.html#_label0)
