@@ -21,7 +21,7 @@ tags:
 
 git pull从远程仓库拉取代码到本地工作目录，做修改之后，git add添加到缓存，git commit把缓存的变动应用到本地仓库，再通过git push上传到远程仓库。
 
-我们也可以通过git fetch复制到本地新分支或者git clone克隆到本地仓库，git checkout切换分支或撤销工作目录下的全部修改（也就是还原到上一次git add或git commit完成时的状态，如果缓存区有修改，则跟缓存区的修改保持一致，否则跟本地仓库保持一致）。
+我们也可以通过git fetch复制到本地新分支或者git clone克隆到本地仓库，git checkout切换分支或撤销工作目录下的全部修改（也就是还原到上一次git add或git commit完成时的状态，即，如果缓存区有修改，则跟缓存区的修改保持一致，否则跟本地仓库保持一致）。
 
  ![status](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommand-status.jpg)
 
