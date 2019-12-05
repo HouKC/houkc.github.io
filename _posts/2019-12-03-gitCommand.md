@@ -30,7 +30,7 @@ git pull从远程仓库拉取代码到本地工作目录，做修改之后，git
 - Untracked：未跟踪，文件还在文件夹中，没有添加到版本控制中，可以用git add添加到缓存staged状态。
 - Unmodified：文件已入库，未修改，表示文件夹中的文件和版本库中的一致，这时进行编辑就会变成Modified状态，或者使用git rm把版本库里的删除掉，就会变成Untracked状态。
 - Modified：文件已修改，文件被编辑过，和版本库的不一致。这时git add一下就可以添加到缓存staged状态，也可以git checkout回退修改，变成没有修改过的状态，也就是Unmodified状态。
-- Staged：暂存状态。使用git commit命令可以同步到版本库中，然后文件就和版本库中一致，也就是UNmodified状态。也可以git reset HEAD filename取消暂存，回退到Modified状态。
+- Staged：暂存状态。使用git commit命令可以同步到版本库中，然后文件就和版本库中一致，也就是Unmodified状态。也可以git reset HEAD filename取消暂存，回退到Modified状态。
 
  ![add](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommand-add.jpg)
  
