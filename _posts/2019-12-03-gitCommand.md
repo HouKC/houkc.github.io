@@ -15,7 +15,7 @@ tags:
 我用git和GitHub来做版本控制和代码仓库管理，这里就简单介绍一下git的基础知识，了解一下git架构和组成，最后再稍微记录一下常用的git命令吧！
 #### 1. git命令原理和文件状态
 
- ![framework](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommmand-framework.jpg)
+ ![framework](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommand-framework.jpg)
 
 如图所示，Remote是远程仓库，Workspace是本地工作目录，Repository是本地仓库，index（或者叫stage）是缓存。
 
@@ -23,7 +23,7 @@ git pull从远程仓库拉取代码到本地工作目录，做修改之后，git
 
 我们也可以通过git fetch或者git clone方式更新本地仓库，git checkout回退修改。
 
- ![status](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommmand-status.jpg)
+ ![status](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommand-status.jpg)
 
 文件状态有4种，可以通过git status [文件名]来查看。
 
@@ -32,7 +32,7 @@ git pull从远程仓库拉取代码到本地工作目录，做修改之后，git
 - Modified：文件已修改，文件被编辑过，和版本库的不一致。这时git add一下就可以添加到缓存staged状态，也可以git checkout回退修改，变成没有修改过的状态，也就是UNmodified状态。
 - Staged：暂存状态。使用git commit命令可以同步到版本库中，然后文件就和版本库中一致，也就是UNmodified状态。也可以git reset HEAD filename取消暂存，回退到Modified状态。
 
- ![add](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommmand-add.jpg)
+ ![add](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitCommand-add.jpg)
  
 从上图可以看出，版本库的范围是包括stage和master的，也就是文件在进入缓存之前，都是在版本库之外，也就是工作区里作修改。只有变成staged状态的时候才算进入版本库，commit了才会进入本地仓库。
 
