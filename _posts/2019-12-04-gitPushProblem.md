@@ -11,6 +11,7 @@ tags:
     - windows
     - github
 ---
+<link rel="stylesheet" href="{{ "/css/syntax.css" | prepend: site.baseurl }}">
 
 ## 前言
 今天遇到一个git push的问题，就是git push的时候每次都要我输入用户名和密码，很繁琐，因此在网上搜索后尝试了这个办法来解决它。
