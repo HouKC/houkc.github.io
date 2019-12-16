@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      Django简介
-subtitle:   简单介绍Django的MTV架构，以及Django的基本组成，顺便说一下怎么新建一个Django项目。
+subtitle:   简单介绍Django的优缺点，对比MVC架构和Django的MTV架构，以及Django的基本组成。
 date:       2019-12-16
 author:     HouKC
 header-img: img/post-bg-coffee.jpeg
@@ -63,6 +63,35 @@ Django框架的MTV架构是由这几个文件实现的，urls.py、views.py、mo
 一张图解释Django框架
 
  ![MTV](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/djangoIntroduction-mtv.jpg)
+
+## Django框架基本组成
+Django框架基本组成见上图中间方框中的几个组件，urls、views、models和templates。
+
+我们通过一个实际编程工作中的工作目录来看下。
+
+在创建了网站工程web和应用mysite下同时还连接了sqlite数据库，目录如下：
+```
+web
+ |——db.sqlite3
+ |——manage.py
+ |——web
+ |   |——__init__.py
+ |   |——settings.py
+ |   |——urls.py
+ |   └——wsgi.py
+ └——mysite
+     |——admin.py
+     |——apps.py
+     |——__init__.py
+     |——migrations
+     |    └——_init__.py
+     |——models.py
+     |——static
+     |——templates
+     |——tests.py
+     └——views.py
+```
+接下来我打算直接做一个实际可用的网站，边做边记录各个部分需要注意的点，以及一些参数设置。
 ## 后记
 参考：
 
