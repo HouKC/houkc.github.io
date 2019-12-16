@@ -47,8 +47,22 @@ MVC架构是一种软件工程设计方法，分为三部分，Model数据模块
 
 一张图解释MVC
  
- ![]
+ ![MVC](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/djangoIntroduction-mvc.jpg)
 
+#### 2.MTV架构
+Django基本上使用了MVC架构，只不过在派发工作的时候隐含了控制层，而网站框架中增加了Template模板文件。
+
+所谓的MTV架构，分为三部分，Model、Template和View。
+
+- Model：定义所有需要用到的数据格式，一般是以数据库的形式来存储的，定义后的数据类导入到view中。
+- View：控制如何处理数据程序逻辑。
+- Template：模板文件用来做每个网页的外观框架。
+
+Django框架的MTV架构是由这几个文件实现的，urls.py、views.py、models.py和templates.py。其中urls.py主要是做用户请求request的分派工作。
+
+一张图解释Django框架
+
+ ![MTV](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/djangoIntroduction-mtv.jpg)
 ## 后记
 参考：
 
