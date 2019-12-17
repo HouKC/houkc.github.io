@@ -70,7 +70,7 @@ Django框架基本组成见上图中间方框中的几个组件，urls、views�
 我们通过一个实际编程工作中的工作目录来看下。
 
 在创建了网站工程web和应用mysite下同时还连接了sqlite数据库，目录如下：
-```
+```sh
 web
  |——db.sqlite3
  |——manage.py

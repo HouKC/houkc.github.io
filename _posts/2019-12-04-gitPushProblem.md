@@ -19,23 +19,23 @@ tags:
 ## 步骤
 #### 1. 方法一，账号密码保存本地
 在git push之后，按照提示输入用户名和密码，完成git push操作。然后再输入以下命令：
-```
+```sh
 git config --global credential.helper store
 ```
 执行上述命令之后会在C:/users/user/目录中产生一个文件.git-credentials，这个文件保存着一个链接，是记录你的账号和密码的。
 
 #### 2. 方法二，改用ssh方式
 首先输入以下命令查看git的pull/push方式：
-```
+```sh
 git remote -v
 ```
 得到如下结果：
-```
+```sh
 origin  https://github.com/HouKC/houkc.github.io.git (fetch)
 origin  https://github.com/HouKC/houkc.github.io.git (push)
 ```
 接着输入以下命令移除http方式：
-```
+```sh
 git remote rm origin
 git remote -v
 ```
@@ -43,23 +43,23 @@ git remote -v
  ![ssh1](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitPushProblem-ssh1.jpg)
  ![ssh2](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitPushProblem-ssh2.jpg)
 回到命令行，输入以下命令：
-```
+```sh
 git remote add origin ssh_address   # ssh_address就是用上面获取到的ssh链接
 ```
 然后git remote -v再次查看，就变成如下状态了：
-```
+```sh
 origin  git@github.com:HouKC/houkc.github.io.git (fetch)
 origin  git@github.com:HouKC/houkc.github.io.git (push)
 ```
 再进行git push，可能会出现如下错误：
-```
+```sh
 fatal: The current branch master has no upstream branch.
 To push the current branch and set the remote as upstream, use
 
     git push --set-upstream origin master
 ```
 这时再执行以下命令即可：
-```
+```sh
 git push --set-upstream origin master
 ```
 
@@ -71,7 +71,7 @@ git push --set-upstream origin master
 先查询代理IP，命令行输入netstat，等候片刻，可以看到如下：
  ![net](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitPushProblem-net.jpg)
 在命令行输入以下命令，其中IP地址和端口号替换为上图中的外部地址即可：
-```
+```sh
 git config --global unset http.proxy
 git config --global http.proxy "10.xx.xx.xx:8081"
 ```
