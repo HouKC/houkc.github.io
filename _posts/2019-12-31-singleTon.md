@@ -266,9 +266,120 @@ i = int(4, 5)
 
 基于元类实现单例模式：
 ```python
+class MetaSingleton(type):
+    _instances = {}
 
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class Logger(metaclass=MetaSingleton):
+    pass
+
+
+logger1 = Logger()
+logger2 = Logger()
+print(logger1, logger2)
 ```
+上面代码时如何实现单例的呢？
 
+其实就是利用元类可以控制类的实例化这一特性，因为类在实例化的时候，会调用元类的call方法，
+我们在call里面维护一个实例集合，当我们想要创建一个实例的时候，就判断一下里面有没有实例，
+有就返回那个实例，没有就创建，这样就可以保证只存在一个实例了。也就是所谓单例。
+
+#### 2.7 单例模式示例：数据库读写操作
+由于完整的云服务被分解成多个服务，每个服务执行不同的数据库操作。也就是说数据库是一个资源，
+其他多个服务可能同时调用这个资源，但是有可能会产生冲突。因此我们采用单例模式来设计数据库
+操作接口。
+```python
+import sqlite3
+class MetaSingleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+class Database(metaclass=MetaSingleton):
+    connection = None
+    def connect(self):
+        if self.connection is None:
+            self.connection = sqlite3.connect("db.sqlite3")
+            self.cursorobj = self.connection.cursor()
+        return self.cursorobj
+db1 = Database().connect()
+db2 = Database().connect()
+print("Database Objects DB1", db1)
+print("Database Objects DB2", db2)
+```
+如上代码，我们创建了一个元类MetaSingleton，编写call方法实现单例，然后用Database类通过
+这个元类装饰后再实例化对象，这时只会创建一个对象，多个web应用程序同时访问数据库时，会多
+次实例化，但只会有一个对象进行数据库操作。
+
+这样一来就可以节约系统资源，避免消耗过多的内存或CPU资源。
+
+**但是，单例模式仅限同一个设备的多个web应用程序，但不是集群化设备上的多个web应用程序。
+后者这种时候依然是每增加一个web应用程序就会创建一个新的单例，这样的话使用单例模式就
+没有意义，因此使用数据库连接池会比实现单例好得多。**
+
+#### 2.8 单例模式示例：运行状况监控服务
+为基础设施提供运行状况监控服务，我们要维护一个监控的服务器列表。当一个服务器从列表中删
+除时，监控软件应该察觉到这一情况，并从被监控的列表中将其删除。
+```python
+class HealthCheck:
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not HealthCheck._instance:
+            HealthCheck._instance = super().__new__(cls, *args, **kwargs)
+        return HealthCheck._instance
+    def __init__(self):
+        self.servers = []
+    def addServer(self):
+        self.servers.append("Server 1")
+        self.servers.append("Server 2")
+        self.servers.append("Server 3")
+        self.servers.append("Server 4")
+    def changeServer(self):
+        self.servers.pop()
+        self.servers.append("Server 5")
+hc1 = HealthCheck()
+hc2 = HealthCheck()
+hc1.addServer()
+print("Schedule health check for servers (1)..")
+for i in range(4):
+    print("Checking ", hc1.servers[i])
+hc2.changeServer()
+print("Schedule health check for servers (2)..")
+for i in range(4):
+    print("Checking ", hc2.servers[i])
+```
+这里HealthCheck类实现了经典单例模式，实例化的hc1和hc2是同一个对象，所以hc1添加服务之后，
+hc2再去删除服务，hc1也会删除服务，因为它们是同一个对象。
+
+#### 2.9 单例模式的缺点
+由于单例模式具有全局访问权限，所以可能会出现以下问题：
+- 全局变量可能在某处被修改，而我们还以为没有变化，在其他程序中继续使用该变量。
+- 可能会对同一对象创建多个引用，由于单例模式只会创建一个对象，因此这种情况下会对同一个对
+象创建多个引用。
+- 耦合性太高，所有依赖于全局变量的类都会紧密耦合，牵一动百。
+
+#### 2.10 单例模式使用场景
+只需要创建一个对象的场景：线程池，缓存，对话框，注册表设置等。
 
 ## 后记
-待完成。
+小结一下：
+- 实现单例的各种办法。
+- 经典单例模式，允许进行多次实例化，但返回同一个对象（修改new方法）。
+- 懒汉式单例模式（设置类方法@classmethod，并在init方法中判断）。
+- Monostate模式，允许创建共享相同状态的多个对象（创建并维护一个字典__shared_state，并
+在init或new方法中将这个字典添加到self.\_\_dict\_\_中）。
+- 元类控制类的实例化实现单例模式（即直接用元类的call方法覆盖掉类的init和new方法，call方
+法中创建并维护一个对象集合_instances）。
+- 单例模式示例：数据库读写操作。
+- 单例模式示例：运行状况监控服务。
+- 单例的缺点：全局变量可能被修改，可能多次引用（只有一个对象多次引用没有意义），耦合性
+高，牵一动百。
+- 单例使用场景：线程池，缓存，对话框，注册表设置等。
+
+下一章是工厂模式。
