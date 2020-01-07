@@ -21,6 +21,8 @@ tags:
 
 接下来简单介绍一下设计模式的内容。
 
+本章源码链接：[https://github.com/HouKC/design-pattern/blob/master/singleTon.py](https://github.com/HouKC/design-pattern/blob/master/singleTon.py)
+
 ## 1. 设计模式简介
 
 #### 1.1 设计模式分三类
@@ -383,3 +385,5 @@ hc2再去删除服务，hc1也会删除服务，因为它们是同一个对象�
 - 单例使用场景：线程池，缓存，对话框，注册表设置等。
 
 下一章是工厂模式。
+
+源码链接：[https://github.com/HouKC/design-pattern/blob/master/singleTon.py](https://github.com/HouKC/design-pattern/blob/master/singleTon.py)
