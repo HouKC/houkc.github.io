@@ -181,6 +181,133 @@ if __name__ == '__main__':
 易，所以降低了维护成本**。
 
 #### 5. 抽象工厂模式
+抽象工厂模式的主要是提供一个接口来创建一系列相关对象，而无需指定具体的类。
 
+工厂方法将创建实例的任务交给子类，抽象工厂方法则是创建一系列相关子类，这些子类调用不同接口实
+现不同的功能。
+
+抽象工厂模式不仅确保客户端与对象的创建相互隔离，同时还确保客户端能够使用创建的对象。但客户端
+只能通过工厂接口访问对象，抽象工厂模式能帮助客户端一次使用来自一个产品/系列的多个对象。
+
+举个例子：披萨店生产多种披萨饼，有**美式披萨**和**印式披萨饼**，那么我们可以抽象一个**披萨工厂**
+类PizzaFactory，并且提供两个方法来生产**素菜披萨**和**非素菜披萨**（createVegPizza和createNonVegPizza），
+然后创造两个具体工厂IndianPizzaFactory和USPizzaFactory，继承了抽象工厂的方法。
+
+工厂类型|披萨类型|披萨名称
+---|---|---
+美式披萨|素菜披萨|墨西哥披萨
+美式披萨|非素菜披萨|汉姆披萨（基于素菜披萨：墨西哥披萨）
+印式披萨|素菜披萨|多彩披萨
+印式披萨|非素菜披萨|鸡肉披萨（基于素菜披萨：多彩披萨）
+
+关于披萨要抽象两个基类：素菜披萨VegPizza和非素菜披萨NonVegPizza。素菜披萨类有一个prepare方
+法（准备素菜），非素菜披萨类有一个serve方法（添加肉类）。根据这两个基类继承出了墨西哥披萨等
+四种不同口味的披萨。
+
+客户端我们定义一个类，提供接口供顾客访问，让他们说明他们的需求。比如说我想要一种美式非素菜披
+萨，那么客户端访问工厂USPizzaFactory，工厂会调用汉姆披萨类HamPizza所提供的接
+口createNonVegPizza方法来制作披萨。 而汉姆披萨类是继承自素菜披萨类VegPizza的，同理其他也是
+这样的工作思路。
+```python
+from abc import ABCMeta, abstractmethod
+
+
+class PizzaFactory(metaclass=ABCMeta):      # 抽象披萨工厂类
+    @abstractmethod
+    def createVegPizza(self):
+        pass
+
+    @abstractmethod
+    def createNonVegPizza(self):
+        pass
+
+
+class IndiaPizzaFactory(PizzaFactory):      # 印式披萨工厂类
+    def createVegPizza(self):
+        return DeluxVeggiePizza()
+
+    def createNonVegPizza(self):
+        return ChickenPizza()
+
+
+class USPizzaFactory(PizzaFactory):     # 美式披萨工厂类
+    def createVegPizza(self):
+        return MexicanVegPizza()
+
+    def createNonVegPizza(self):
+        return HamPizza()
+
+
+class VegPizza(metaclass=ABCMeta):      # 抽象素菜披萨类
+    @abstractmethod
+    def prepare(self, VegPizza):
+        pass
+
+
+class NonVegPizza(metaclass=ABCMeta):   # 抽象非素菜披萨类
+    @abstractmethod
+    def serve(self, VegPizza):
+        pass
+
+
+class DeluxVeggiePizza(VegPizza):       # 多彩披萨类
+    def prepare(self):
+        print("Prepare ", type(self).__name__)
+
+
+class ChickenPizza(NonVegPizza):    # 鸡肉披萨类
+    def serve(self, VegPizza):
+        print(type(self).__name__, "is served with Chicken on ", type(VegPizza).__name__)
+
+
+class MexicanVegPizza(VegPizza):    # 墨西哥披萨类
+    def prepare(self):
+        print("Prepare ", type(self).__name__)
+
+
+class HamPizza(NonVegPizza):        # 汉姆披萨类
+    def serve(self, VegPizza):
+        print(type(self).__name__, "is served with Ham on ", type(VegPizza).__name__)
+
+
+class PizzaStore:           # 披萨店，即客户端 
+    def __init__(self):
+        pass
+
+    def makePizzas(self):   # 制作披萨，根据需求实例化工厂，选择调用工厂的接口制作素菜或者非素菜披萨
+        for factory in [IndiaPizzaFactory(), USPizzaFactory()]:
+            self.factory = factory
+            self.NonVegPizza = self.factory.createNonVegPizza()
+            self.VegPizza = self.factory.createVegPizza()
+            self.VegPizza.prepare()
+            self.NonVegPizza.serve(self.VegPizza)
+
+
+pizza = PizzaStore()    # 实例化客户端
+pizza.makePizzas()
+```
+如上可以看到工厂类，它们带有创建披萨对象的方法，这些方法返回披萨对象。
+
+而披萨对象是两种素菜类和两种非素菜类实例化而来的。
+
+现在客户四种披萨各要一份，那么客户端就依次调用两个工厂，让每个工厂都制作一个素菜类披萨和非
+素菜类披萨，这样就可以四种披萨都做好了。
+
+#### 6. 工厂方法和抽象工厂方法的对比
+工厂方法|抽象工厂方法
+---|---
+向客户开放了一个创建对象的方法|包含一个或多个工厂方法来创建一个系列的相关对象
+使用继承和子类来决定要创建哪个对象|使用组合将创建对象的任务委托给其他类
+用于创建一个产品|用于创建相关产品的系列
 
 ## 后记
+小结一下：
+- **简单工厂模式**：可以在运行时根据客户端传入的参数类型来创建相应的实例（**森林猫狗叫**，用客户端
+类方法传入类名作为参数）。
+- **工厂方法模式**：简单工厂的一个变体，定义了一个抽象接口，子类继承这个接口完成产品对象的创建
+成（**不同平台不同信息区**，抽象类派生出子类，在子类中实现产品对象的创建，客户端只要选择实例化
+哪个子类即可，因为接口调用是设置好在类的初始化中了）。
+- **抽象工厂方法**：提供了一个接口，无需指定具体的类就能创建一系列的相关对象（**印式美式披萨**，
+实例化工厂美式披萨工厂，调用生产方法创建某个类型的披萨，也可以整个系列的美式披萨都产生）。
+
+下一章是门面模式。
