@@ -18,6 +18,8 @@ tags:
 
 此外，本章python代码实现时，都会把提炼抽象类和抽象方法，这样逻辑会更加统一。
 
+本章源码链接：[https://github.com/HouKC/design-pattern/blob/master/factoryPattern.py](https://github.com/HouKC/design-pattern/blob/master/factoryPattern.py)
+
 ## 工厂模式
 #### 1. 工厂模式简介
 所谓“工厂”就是一个**负责创建其他类型对象的类**。
@@ -311,3 +313,5 @@ pizza.makePizzas()
 实例化工厂美式披萨工厂，调用生产方法创建某个类型的披萨，也可以整个系列的美式披萨都产生）。
 
 下一章是门面模式。
+
+源码链接：[https://github.com/HouKC/design-pattern/blob/master/factoryPattern.py](https://github.com/HouKC/design-pattern/blob/master/factoryPattern.py)
