@@ -95,6 +95,111 @@ if __name__ == "__main__":
 来节省开销。当客户端请求或访问对象时，才会创建实际对象。
 - **远程代理**：给位于远程服务器或不同地址空间上的实际对象提供了一个本地表示。如在本地建立
 一个远程代理对象来表示远程的对象去执行远程命令。
-- **保护代理**：
+- **保护代理**：代理能够控制RealSubject的敏感对象的访问。
+- **智能代理**：在访问对象时插入其他操作。
+
+## 5. 代理设计模式示例：银行借记卡
+假设我们要买一件衣服，可是正好手里现金不够了，这时候有一种东西叫做银行借记卡，刷一下卡，银
+行就会把钱划入商家账户。
+
+这里面就涉及：
+- **客户端（You）**：提供购买衣服的方法make_payment，还有初始化函数\_\_init\_\_调用并实
+例化代理。如果付款成功，将返回\_\_del\_\_方法。
+- **主题（Payment）**：有一个do_pay方法用于付款，但需要代理和真实主题来实现。
+- **真实主题（Bank）**：提供setCard方法用于发送借记卡信息给银行；\_\_getAccount方法用于
+获取借记卡持有人的信息，我们这里假设信息就是借记卡号；\_\_hasFunds方法由于查看账户钱够不
+够；do_pay方法负责付款。
+- **代理（DebitCard）**：是真实主题（银行）的代理，\_\_init\_\_方法内部控制主题对象的创
+建，do_pay方法提供借记卡持有人信息并支付。
+
+```python
+from abc import ABCMeta, abstractmethod
+
+
+class Payment(metaclass=ABCMeta):
+    @abstractmethod
+    def do_pay(self):
+        pass
+
+
+class Bank(Payment):
+    def __init__(self):
+        self.card = None
+        self.account = None
+
+    def __getAccount(self):
+        self.account = self.card    # Assume card number is account number
+        return self.account
+
+    def __hasFunds(self):
+        print("Bank:: Checking if Account", self.__getAccount(), "has enough funds")
+        return True
+
+    def setCard(self, card):
+        self.card = card
+
+    def do_pay(self):
+        if self.__hasFunds():
+            print("Bank:: Paying the merchant")
+            return True
+        else:
+            print("Bank:: Sorry, not enough funds! ")
+            return False
+
+
+class DebitCard(Payment):
+    def __init__(self):
+        self.bank = Bank()
+
+    def do_pay(self):
+        card = input("Proxy:: Punch in Card Number: ")
+        self.bank.setCard(card)
+        return self.bank.do_pay()
+
+
+class You:
+    def __init__(self):
+        print("You:: Lets buy the Denim shirt")
+        self.debitCard = DebitCard()
+        self.isPuchased = None
+
+    def make_payment(self):
+        self.isPuchased = self.debitCard.do_pay()
+
+    def __del__(self):
+        if self.isPuchased:
+            print("You:: Wow! Denim shirt is Mine :-)")
+        else:
+            print("You:: I should earn more :(")
+
+
+you = You()
+you.make_payment()
+```
+注意上述代码假设了资金是够的，卡号23-2134-222是随便输入的，输出结果如下：
+```sh
+You:: Lets buy the Denim shirt
+Proxy:: Punch in Card Number: 23-2134-222
+Bank:: Checking if Account 23-2134-222 has enough funds
+Bank:: Paying the merchant
+You:: Wow! Denim shirt is Mine :-)
+
+Process finished with exit code 0
+```
+
+## 6. 代理模式的优点
+- 可以**缓存**笨重的对象或**频繁访问的对象来提高应用程序的性能**。
+- **提供对于真实主题的访问授权**，达到权限才能访问到某种资源。
+- **远程代理便于**网络连接和数据库连接的**远程服务器做交互**。
+
+## 7. 代理模式的缺点
+可能会增加响应时间。
 
 ## 后记
+小结一下：
+- 代理设计模式：提供真实主题一样的接口，代表真实主题供客户端访问，相当于在客户端与服务
+器之间增加了一层。
+- 代理模式的4种实现方式：虚拟代理、远程代理、保护代理和智能代理。
+- 代理模式的优点：缓存频繁访问的对象，提高应用程序性能；访问授权控制，远程代理服务。
+
+下一章是观察者模式。
