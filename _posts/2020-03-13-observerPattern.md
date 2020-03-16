@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      设计模式（五）代理模式
+title:      设计模式（五）观察者模式
 subtitle:   根据《Python设计模式（第2版）》一书的学习，记录下来的笔记。本篇博客是观察者模式，是一种行为型模式。
 date:       2020-03-13
 author:     HouKC

@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      设计模式（六）代理模式
+title:      设计模式（六）命令模式
 subtitle:   根据《Python设计模式（第2版）》一书的学习，记录下来的笔记。本篇博客是命令模式，是一种行为型模式。
 date:       2020-03-16
 author:     HouKC
