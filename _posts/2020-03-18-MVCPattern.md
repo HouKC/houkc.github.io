@@ -2,7 +2,7 @@
 layout:     post
 title:      设计模式（八）MCV模式
 subtitle:   根据《Python设计模式（第2版）》一书的学习，记录下来的笔记。本篇博客是MCV模式，是一种复合模式，把一些设计模式组合起来使用。
-date:       2020-03-16
+date:       2020-03-18
 author:     HouKC
 header-img: img/post-bg-coffee.jpeg
 catalog:    true
