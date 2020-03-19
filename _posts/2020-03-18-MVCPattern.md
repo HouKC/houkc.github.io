@@ -107,9 +107,93 @@ Tornado框架中的视图，包括三个模板：
 - /todo/update：将任务状态更新为打开或关闭的路由。
 - /todo/delete：删除已完成任务的路由。
 
+提前安装tornado、sqlite库，然后编写代码如下：
+```python
+import tornado
+import tornado.web
+import tornado.ioloop
+import tornado.httpserver
+import sqlite3
+
+class IndexHandler(tornado.web.RequestHandler):
+    def get(self):
+        query = "select * from task"
+        todos = _execute(query)
+        self.render('index.html', todos=todos)
+
+class NewHandler(tornado.web.RequestHandler):
+    def post(self):
+        name = self.get_argument('name', None)
+        query = "create table if not exists task (id INTEGER PRIMARY KEY, name TEXT, status NUMERIC)"
+        _execute(query)
+        query = "insert into task (name, status) values ('%s', %d) " % (name, 1)
+        _execute(query)
+        self.redirect('/')
+
+    def get(self):
+        self.render('new.html')
+
+class UpdateHandler(tornado.web.RequestHandler):
+    def get(self, id, status):
+        query = "update task set status=%d where id=%s" % (int(status), id)
+        _execute(query)
+        self.redirect('/')
+
+class DeleteHandler(tornado.web.RequestHandler):
+    def get(self, id):
+        query = "delete from task where id=%s" % id
+        _execute(query)
+        self.redirect('/')
+
+class RunApp(tornado.web.Application):
+    def __init__(self):
+        Handlers = [
+            (r'/', IndexHandler),
+            (r'/todo/new', NewHandler),
+            (r'/todo/update/(\d+)/(\d+)', UpdateHandler),
+            (r'/todo/delete/(\d+)', DeleteHandler),
+        ]
+        settings = dict(
+            debug=True,
+            template_path='templates',
+            static_path="static",
+        )
+        tornado.web.Application.__init__(self, Handlers, **settings)
+
+
+conn = sqlite3.connect('db.sqlite3')
+
+def _execute(query):
+    c = conn.cursor()
+    tt = c.execute(query)
+    conn.commit()
+    todos = []
+    for t in tt:
+        todos.append(t)
+    return todos
+
+
+if __name__ == "__main__":
+    http_server = tornado.httpserver.HTTPServer(RunApp())
+    http_server.listen(5000)
+    tornado.ioloop.IOLoop.instance().start()
+    conn.close()
+```
+
+注意：要在MVCPattern.py所在目录下创建templates目录，在templates中创建base.html、new.html、index.html。运行MVCPattern.py后，
+在浏览器输入http://localhost:5000/todo/new来添加几个选项，第一次一定要先从这个链接进去，才会创建db.sqlite3数据库文件，不然不会自动创建数据库会报错。
+
+## MVC模式的优点
+- MVC分为三个主要部分，这有助于提高可维护性，强制松耦合，并降低复杂性。
+- MVC允许对前端进行独立更改，而对后端逻辑无需任何修改或只需进行很少的更改，因此开发工作仍可以独立运行。
+- 可以更改模型或业务逻辑，而无需对视图进行任何更改。
+- 可以更改控制器，而不会对视图或模型造成任何影响。
+- 有助于招聘具有特定能力的人员，如平台工程师和UI工程师，他们可以在自己专业领域独立工作。
 
 ## 后记
 小结一下：
+- 了解了MVC模式的架构：模型-视图-控制器。
+- 如何使用MVC模式来确保松散耦合，并维护一个用于独立任务开发的多层框架。
+- MVC模式的优点。
 
-
-下一章是模式。
+下一章是状态设计模式。
