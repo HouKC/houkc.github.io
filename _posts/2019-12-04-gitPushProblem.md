@@ -72,7 +72,7 @@ git push --set-upstream origin master
  ![net](https://raw.githubusercontent.com/HouKC/HouKC.github.io/master/img/gitPushProblem-net.jpg)
 在命令行输入以下命令，其中IP地址和端口号替换为上图中的外部地址即可：
 ```sh
-git config --global unset http.proxy
+git config --global --unset http.proxy
 git config --global http.proxy "10.xx.xx.xx:8081"
 ```
 ## 后记
