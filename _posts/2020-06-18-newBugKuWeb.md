@@ -60,7 +60,7 @@ get请求链接如下：
 http://123.206.31.85:10001/?a=1&b=php://input
 ```
 bp抓包后修改如下：
-![web1-bp抓包](https://github.com/HouKC/houkc.github.io/blob/master/img/web1-bp.png)
+![web1-bp抓包](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/web1-bp.png)
 即可收到返回的flag
 
 ```
