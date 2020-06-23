@@ -67,10 +67,20 @@ bp抓包后修改如下：
 flag{c3fd1661da5efb989c72b91f3c378759}
 ```
 
-
 ## web9
+根据提示put me a message bugku then you can get the flag 可以知道要用PUT请求，并且带上数据bugku。
 
+- 方法一：打开postman软件，选择PUT请求，填入链接，然后选择下方body按钮，选择raw格式，在下面的输入框中输入bugku，然后发送即可。
+- 方法二：用burpsuite拦截，抓包后发送到repeater修改，把GET改成PUT，并在http头中间加入两行
+  - Referer: http://123.206.31.85:303/
+  - Content-Type:application/x-www-form-urlencoded
+然后再在下面加上内容bugku即可。
 
+接着会收到一串字符串ZmxhZ3tUN2w4eHM5ZmMxbmN0OE52aVBUYm4zZkcwZHpYOVZ9
+base64解密即可得到
+```
+flag{T7l8xs9fc1nct8NviPTbn3fG0dzX9V}
+```
 
 ## 流量分析
 ## web2
