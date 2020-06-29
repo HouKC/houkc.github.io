@@ -470,4 +470,13 @@ flag{db2699f21f433a78}
 ```
 
 ## web23
+御剑直接扫描后台发现有5个路径：robots.txt、readme.txt、index.html、/admin/login.html、/admin/login.php
+
+试着看了下robots.txt，提示readme.txt，然后再看一下readme.txt，提示账号admin，密码是三位数字，然后所谓验证码貌似短时间内也没有报错.....所以就直接爆破密码吧，从000到999爆破，最后发现密码为677。
+
+返回包中带有flag为：
+```
+flag{3e457b8bcd74c8b4}
+```
+
 ## web7
