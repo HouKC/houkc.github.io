@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      新BugKu平台web题writeup
+title:      新BugKu平台web题writeup(上)
 subtitle:   新Bugku平台，又名newbugku，打靶CTF，CTF_论剑场。包含题目web26、web1、web9、流量分析、web2、web5、web6、web11、web13、日志审计、web18、web20、web3、web4、web15、web14、web21、web23、web7。
 date:       2020-06-18
 author:     HouKC
@@ -480,3 +480,28 @@ flag{3e457b8bcd74c8b4}
 ```
 
 ## web7
+打开链接是一个登陆框，而且有默认登录信息，其实就是账号为username，密码为password。
+
+登录进去说权限不够，而且根据题目本身提示“给你块小饼干”，联想到可能跟cookie有关，那么在登录的时候burpsuite抓包，看看登录信息。
+
+登录请求头好像没啥，转到burpsuite->repeater，go一下发送出去看看返回包，看到返回头中有两行set-cookie可能有玄机：
+```
+Set-Cookie: u=351e76680314c4b06b824ec593239362517f538b29
+Set-Cookie: r=351e766803d63c7ede8cb1e1c8db5e51c63fd47cff
+```
+对比一下不难发现，u和r前面几位是一样的，去掉一样的还剩下两部分，
+```
+14c4b06b824ec593239362517f538b29
+d63c7ede8cb1e1c8db5e51c63fd47cff
+```
+正好都是32位长度，考虑md5解密，找个网站破解一下，得到分别是username和password的md5值，这不正是我们登录的账号密码？？
+
+既然说要提权，那最简单的就是admin账户，密码也给个admin好了，md5 32位小写加密一下，得到21232f297a57a5a743894a0e4a801fc3，伪造一下头部的u和r后面会用到：
+```
+u=351e76680321232f297a57a5a743894a0e4a801fc3
+r=351e76680321232f297a57a5a743894a0e4a801fc3
+```
+还是先用username和password登录，然后会自动跳转到home.php，这时开启burpsuite拦截，然后刷新一下，抓包，可以看到u和r，先把这个请求头复制到repeater，然后修改u和r的值为上面的值，也就是伪造cookie来提升权限，然后进行发送即可得到flag：
+```
+flag{98112cb20fb17cc81687115010f8a5c3}
+```
