@@ -11,7 +11,7 @@ github_repo: "https://github.com/HouKC/houkc.github.io" # you code repository
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "Confusion is only temporary, and I can rise again!"
+sidebar-about-description: "Where there are people，there are bugs!"
 sidebar-avatar: /img/about-me-picture.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
@@ -86,7 +86,7 @@ ba_track_id: 69e6914385241fbfae77ab561e9e91d2
 
 # Featured Tags
 featured-tags: true                     # 是否使用首页标签
-featured-condition-size: 1              # 相同标签数量大于这个数，才会出现在首页
+featured-condition-size: 0              # 相同标签数量大于这个数，才会出现在首页
 
 
 
