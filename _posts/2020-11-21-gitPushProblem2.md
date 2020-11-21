@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      git push弹窗输入密码提示登录失败
+title:      git push提示登录失败
 subtitle:    git push弹窗输入密码提示Logon failed, use ctrl+c to cancel basic credential prompt.
 登录失败问题，用新版git可解决。
 date:       2020-11-21
