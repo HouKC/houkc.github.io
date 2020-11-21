@@ -31,6 +31,7 @@ Everything up-to-date
 
 ## 版本信息
 我使用的旧版本GIT是：Git-2.24.0.2-64-bit
+
 当前最新版本是：Git-2.29.2.2-64-bit
 
 ## 步骤
@@ -38,7 +39,7 @@ Everything up-to-date
 控制面板 -> 卸载程序 -> 找到git -> 右键卸载 -> 确定即可
 
 #### 2、下载最新版本的GIT
-https://gitforwindows.org/
+[https://gitforwindows.org/](https://gitforwindows.org/)
 
 #### 3、安装GIT
 一路下一步就可以了，如果想安装别的目录，注意在点击下一步的时候留意修改安装路径的选项。
