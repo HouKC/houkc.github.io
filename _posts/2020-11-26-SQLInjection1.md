@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Web笔记(一) SQL注入(MySQL)
+title:      Web笔记(一)
 subtitle:   这个系列是整理学习安全的笔记，包括Web和PWN的一些知识。本章是MySQL的SQL注入。
 date:       2020-11-26
 author:     HouKC
