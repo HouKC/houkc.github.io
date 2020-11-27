@@ -706,4 +706,3 @@ select * from information_schema limit 20\G;`
 ```
 
 limit 20 是限制了只取20条记录，\\G转化成容易看的形式。
-
