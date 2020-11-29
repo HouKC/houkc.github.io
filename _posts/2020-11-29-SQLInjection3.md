@@ -73,7 +73,7 @@ asp/aspx+sqlserver
 ## 0x03 调用数据库代码
 
 ```asp
-	<%
+<%
 set conn = server.createobject("adodb.connection")
 conn.open "provider=sqloledb;source=local;uid=sa;pwd=*****;database=database-name"
 %>
