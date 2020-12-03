@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Web笔记（九）命令执行漏洞
+title:      Web笔记（十）命令执行漏洞
 subtitle:   这个系列是整理学习安全的笔记，包括Web和PWN的一些知识。本章是学习代码命令执行漏洞，以及常用的命令执行语句。
 date:       2020-12-02
 author:     HouKC

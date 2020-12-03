@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Web笔记（八）文件包含漏洞
+title:      Web笔记（九）文件包含漏洞
 subtitle:   这个系列是整理学习安全的笔记，包括Web和PWN的一些知识。本章是学习文件包含漏洞，记录的一些笔记。
 date:       2020-12-02
 author:     HouKC
