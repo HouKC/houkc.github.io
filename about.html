@@ -40,7 +40,7 @@ header-img: "img/post-bg-rwd.jpg"
 <div id="content"></div>
 
 <script>
-    $.get('./README.md', function(response, status, xhr){
+    $.get('https://github.com/HouKC/houkc.github.io/blob/master/README.md', function(response, status, xhr){
         $("#content").html(marked(response));
     });
 </script>
