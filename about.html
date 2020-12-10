@@ -35,11 +35,12 @@ header-img: "img/post-bg-rwd.jpg"
     </ul>
 </div>
 
+<script src="./js/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <div id="content"></div>
 
 <script>
-    $.get('../README.md', function(response, status, xhr){
+    $.get('./README.md', function(response, status, xhr){
         $("#content").html(marked(response));
     });
 </script>
