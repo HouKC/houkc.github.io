@@ -904,7 +904,7 @@ kekeo.exe "exploit::ms14068 /user:temp /password:123456 /sid:S-x-x-xx-xxxxxxxxx-
 
 
 
-## 0xff 常见windows存在的漏洞端口
+## 0x0f 常见windows存在的漏洞端口
 
 - 445 ms17-010 永恒之蓝（windows 10 以前）
 - 3389 CVE-2019-0708 BlueKeep（windows7/windows2008）
