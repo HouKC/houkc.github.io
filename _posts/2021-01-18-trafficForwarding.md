@@ -195,14 +195,14 @@ lcx -listen 443 9000
 > ```
 > 
 > 即在执行命令之前加一个`proxychains4 -q`，`-q`参数作用是不输出proxychains4的输出，不然每输出一行都会带一行代理的信息。
->
-在/etc/proxychains.conf进行配置，在其最后一行写一行：
-
-```
-socks5 [ip] [端口]
-# 例如：
-socks5 172.16.12.2 8000
-```
+> 
+> 在/etc/proxychains.conf进行配置，在其最后一行写一行：
+> 
+> ```
+> socks5 [ip] [端口]
+> # 例如：
+> socks5 172.16.12.2 8000
+> ```
 
 
 
