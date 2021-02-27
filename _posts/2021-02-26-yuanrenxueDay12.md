@@ -19,7 +19,7 @@ tags:
 
 [js加密-入门级js](http://match.yuanrenxue.com/match/12)
 
-![image-20210226011854298](https://upload-images.jianshu.io/upload_images/20192781-72372d53653a3ae0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image-20210226011854298](http://houkc.github.io/img/image-20210226011854298.png)
 
 
 
@@ -29,7 +29,7 @@ tags:
 
 直接打开Network窗口，然后点击一下网站中第2页，如下：
 
-![image-20210226011427989](https://upload-images.jianshu.io/upload_images/20192781-1befb09d56c3916c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image-20210226011427989](http://houkc.github.io/img/image-20210226011427989.png)
 
 可以看到参数m很有可能是base64编码，找个解码网站解码得到`eXVhbnJlbnh1ZTI=`的值为`yuanrenxue2`，推测出是`yuanrenxue + 页数`的规律。
 
@@ -65,5 +65,5 @@ if __name__ == '__main__':
 
 输出结果如下：
 
-![image-20210226011815764](https://upload-images.jianshu.io/upload_images/20192781-92dcfced2aa245a9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image-20210226011815764](http://houkc.github.io/img/image-20210226011815764.png)
 
