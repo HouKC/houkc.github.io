@@ -86,7 +86,6 @@ Blog made by HouKC.
 #### 6. 猿人学平台刷题writeup（最近更新）
 
 - [猿人学系列（一）第一届Web攻防第一题](https://houkc.github.io/2021/02/25/yuanrenxueDay1/)（最近更新）
-
 - [猿人学系列（二）第一届Web攻防第十二题](https://houkc.github.io/2021/02/26/yuanrenxueDay12/)（最近更新）
 - [猿人学系列（三）第一届Web攻防第十三题](https://houkc.github.io/2021/02/26/yuanrenxueDay13/)（最近更新）
 - [猿人学系列（四）第一届Web攻防第二题](https://houkc.github.io/2021/02/27/yuanernxueDay2/)（最近更新）
