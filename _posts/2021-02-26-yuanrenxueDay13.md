@@ -19,7 +19,7 @@ tags:
 
 [js加密-入门级cookie](http://match.yuanrenxue.com/match/13)
 
-![image-20210226110333829](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210226110333829.png)
+![image-20210226110333829](https://upload-images.jianshu.io/upload_images/20192781-f34d7b2c85a0ead5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 
@@ -33,7 +33,7 @@ tags:
 
 另外，还都带了一个cookie键值：`yuanrenxue_cookie`，如下
 
-![image-20210226111634464](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210226111634464.png)
+![image-20210226111634464](https://upload-images.jianshu.io/upload_images/20192781-7a2df106150d28d0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 在这三个请求的响应中，可以看到，第一次请求看不到返回了什么，第二次请求返回页面结构，第三次请求是返回数据。
 
@@ -51,7 +51,7 @@ tags:
 
 代码是先设置两个cookie，直接在console中调试即可看到：
 
-![image-20210226112746964](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210226112746964.png)
+![image-20210226112746964](https://upload-images.jianshu.io/upload_images/20192781-5bdf8785deba4677.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 这里cookie值跟上面第一张图片中的不相等，是因为服务器有session时长，加载页面一小段时间后，我们再右键查看源码其实会重新获取session，也就是重新从第一次请求开始，所以返回的内容就是设置cookie的代码。
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
 结果如图：
 
-![image-20210226113655453](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210226113655453.png)
+![image-20210226113655453](https://upload-images.jianshu.io/upload_images/20192781-07ad454966b603f5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 加个正则匹配一下，顺便设置到cookie中去：
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
 输出结果如下：
 
-![image-20210226113924399](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210226113924399.png)
+![image-20210226113924399](https://upload-images.jianshu.io/upload_images/20192781-1141c91aa98905e9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 最后用设置好的session直接请求api：
 
@@ -145,5 +145,5 @@ if __name__ == '__main__':
 
 输出结果：
 
-![image-20210226123719772](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210226123719772.png)
+![image-20210226123719772](https://upload-images.jianshu.io/upload_images/20192781-6eea126686f7fb68.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 

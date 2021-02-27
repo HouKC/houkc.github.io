@@ -19,7 +19,7 @@ tags:
 
 [访问逻辑-推心置腹](http://match.yuanrenxue.com/match/3)
 
-![image-20210227115104753](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227115104753.png)
+![image-20210227115104753](https://upload-images.jianshu.io/upload_images/20192781-030b42024eac0409.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 
@@ -33,13 +33,13 @@ tags:
 
 启动fiddler之后，还是回到chrome中刷新一下页面，然后再fiddler中分析。
 
-![image-20210227120324283](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227120324283.png)
+![image-20210227120324283](https://upload-images.jianshu.io/upload_images/20192781-3968e18fd3dee117.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 找到获取数据的包（`/api/match/3`），可以其看到返回包中就是json格式的数据（格式跟以往的题目一样）。
 
 接着看下其请求头，发现cookie处，比较可疑的是m和sessionid，因为全局搜索这两个都是在下面这些包中出现，而且是一模一样的：
 
-![image-20210227120841390](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227120841390.png)
+![image-20210227120841390](https://upload-images.jianshu.io/upload_images/20192781-f22f11bdd5e6ace6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 但是m跟时间戳有关，暂时不知道生成规则（在这里测试m浪费了些时间没研究出来，但是后面发现题目提示访问逻辑，所以猜测可能跟生成逻辑没什么关系，而是在访问的时候有什么次序之类的）。那么可以尝试直接带上这两个值向api请求，代码如下：
 
@@ -68,7 +68,7 @@ response = requests.get(url)
 
 那么所谓的访问逻辑问题出在哪里呢？观察各个包发现在请求之前还进行了一次访问logo链接，并且我去点击第2页、第3页都会在访问前去访问一次logo链接，所以大胆猜测所谓的访问逻辑可能跟这个有关。
 
-![image-20210227121829595](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227121829595.png)
+![image-20210227121829595](https://upload-images.jianshu.io/upload_images/20192781-6741165b39bfc19c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 所以接下来先访问logo再请求api，并且因为有sessionid存在，这种有发包先后次序的应该建立session来访问，以保持关联。
 
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
 输出结果如下：
 
-![image-20210227123333273](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227123333273.png)
+![image-20210227123333273](https://upload-images.jianshu.io/upload_images/20192781-3b115327df21bd79.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 

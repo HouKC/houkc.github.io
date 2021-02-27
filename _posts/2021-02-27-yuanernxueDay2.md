@@ -19,7 +19,7 @@ tags:
 
 [js混淆-动态cookie](http://match.yuanrenxue.com/match/2)
 
-![image-20210227005630507](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227005630507.png)
+![image-20210227005630507](https://upload-images.jianshu.io/upload_images/20192781-6111e9546d8d5d1e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 
@@ -29,7 +29,7 @@ tags:
 
 打开开发者模式下Network窗口，然后刷新一下页面，这道题和13题类似，都是发送三次请求来得到最终页面，第一个请求是在源码中生成cookie，接着带着这个cookie做后面的请求，但是题目提示动态cookie，一般可以理解为每次请求都需要生成并携带新的cookie。
 
-![image-20210227010521067](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227010521067.png)
+![image-20210227010521067](https://upload-images.jianshu.io/upload_images/20192781-5c55339d3a8b164b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 从做其他题目的情况可以知道，cookie中最关键的键值对是m，所以我们需要找到关于m的生成方式。同样的可以发现第一次请求看不到响应返回的源码（后面可以知道是因为它很快就重载了页面）。
 
@@ -47,11 +47,11 @@ print(response.text)
 
 返回得到源码如下：
 
-![image-20210227011336251](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227011336251.png)
+![image-20210227011336251](https://upload-images.jianshu.io/upload_images/20192781-8fe960353330889a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 可以大概看出源码经过了编码，这里用到ob混淆，可以到猿人学平台的爬虫分析工具中解混淆（注意去除script标签，链接：[解混淆测试版V0.1](http://tool.yuanrenxue.com/decode_obfuscator)），解码后可以得到js源码。
 
-![image-20210227011607778](https://raw.githubusercontent.com/HouKC/houkc.github.io/master/img/image-20210227011607778.png)
+![image-20210227011607778](https://upload-images.jianshu.io/upload_images/20192781-3b95d4da8d7ebad7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 ```js
 (function $c(k) {
