@@ -43,7 +43,7 @@ Blog made by HouKC.
 
 - [DVWA靶机学习——总结](https://houkc.github.io/2020/11/25/dvwa15/)
 
-#### 2. Web安全学习笔记
+#### 2. Web安全学习笔记（最近更新）
 
 - [Web笔记（一）SQL注入之MySQL](https://houkc.github.io/2020/11/26/SQLInjection1/)
 - [Web笔记（二）SQL注入之Access](https://houkc.github.io/2020/11/28/SQLInjection2/)
@@ -60,6 +60,9 @@ Blog made by HouKC.
 - [Web笔记（十三）XXE](https://houkc.github.io/2020/12/05/XXE/)
 - [Web笔记（十四）PHP常见特性](https://houkc.github.io/2020/12/06/phpProperty/)
 - [Web笔记（十五）信息搜集](https://houkc.github.io/2020/12/10/informationGathering/)
+- [Web笔记（十六）AWD Web攻防](https://houkc.github.io/2020/12/17/awd/)（最近更新）
+- [Web笔记（十七）php常见漏洞利用](https://houkc.github.io/2020/12/18/phpVulnerability/)（最近更新）
+- [Web笔记（十八）jsp常见漏洞利用](https://houkc.github.io/2020/12/20/jspVulnerability/)（最近更新）
 - ...（待更新）
 
 #### 3. 工具篇
@@ -74,12 +77,21 @@ Blog made by HouKC.
 - [新BugKu平台web题writeup(下)](https://houkc.github.io/2020/06/30/newBugKuWeb2/)
 - ...（待更新）
 
-#### 5. 猿人学平台刷题writeup（最近更新）
+#### 5. 提权&内网渗透（最近更新）
 
-- [猿人学系列（一）第一届Web攻防第一题](https://houkc.github.io/2021/02/25/yuanrenxueDay1/)
+- [权限提升&内网渗透（一）Windows提权](https://houkc.github.io/2020/12/24/privilegeEscalation/)（最近更新）
+- [权限提升&内网渗透（二）Linux提权](https://houkc.github.io/2020/12/29/privilegeEscalation2/)（最近更新）
+- [权限提升&内网渗透（三）内网流量转发](https://houkc.github.io/2021/01/18/trafficForwarding/)（最近更新）
 
-- [猿人学系列（二）第一届Web攻防第十二题](https://houkc.github.io/2021/02/26/yuanrenxueDay12/)
-- [猿人学系列（三）第一届Web攻防第十三题](https://houkc.github.io/2021/02/26/yuanrenxueDay13/)
+#### 6. 猿人学平台刷题writeup（最近更新）
+
+- [猿人学系列（一）第一届Web攻防第一题](https://houkc.github.io/2021/02/25/yuanrenxueDay1/)（最近更新）
+
+- [猿人学系列（二）第一届Web攻防第十二题](https://houkc.github.io/2021/02/26/yuanrenxueDay12/)（最近更新）
+- [猿人学系列（三）第一届Web攻防第十三题](https://houkc.github.io/2021/02/26/yuanrenxueDay13/)（最近更新）
+- [猿人学系列（四）第一届Web攻防第二题](https://houkc.github.io/2021/02/27/yuanernxueDay2/)（最近更新）
+- [猿人学系列（五）第一届Web攻防第三题](https://houkc.github.io/2021/02/27/yuanrenxueDay3/)（最近更新）
+- ...（待更新）
 
 
 
@@ -127,7 +139,19 @@ Blog made by HouKC.
 
 
 
+## 0x06 小技巧（最近更新）
+
+- [如何快速开启一个简单的HTTP服务器](https://houkc.github.io/2020/12/24/openSimpleWebServer/)（最近更新）
+
+
+
 ## 0xff Readme版本更新日志
+
+- 2021-02-27：更新如下内容：
+  - 小技巧：`如何快速开启一个简单的HTTP服务器`；
+  - Web安全学习笔记：`Web笔记（十六）AWD Web攻防`、`Web笔记（十七）php常见漏洞利用`、`Web笔记（十八）jsp常见漏洞利用`；
+  - 提权&内网渗透：`权限提升&内网渗透（一）Windows提权`、`权限提升&内网渗透（二）Linux提权`、`权限提升&内网渗透（三）内网流量转发`；
+  - 猿人学平台刷题writeup：`猿人学系列（一）第一届Web攻防第一题`、`猿人学系列（二）第一届Web攻防第十二题`、`猿人学系列（三）第一届Web攻防第十三题`、`猿人学系列（四）第一届Web攻防第二题`、`猿人学系列（五）第一届Web攻防第三题`。
 
 - 2020-12-10：编写Readme.md，分类整理截止12月10日发布的所有博客，后续新增博客可能会累积一段时间后，再更新一下Readme.md。
 
