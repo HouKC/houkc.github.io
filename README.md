@@ -74,6 +74,13 @@ Blog made by HouKC.
 - [新BugKu平台web题writeup(下)](https://houkc.github.io/2020/06/30/newBugKuWeb2/)
 - ...（待更新）
 
+#### 5. 猿人学平台刷题writeup（最近更新）
+
+- [猿人学系列（一）第一届Web攻防第一题](https://houkc.github.io/2021/02/25/yuanrenxueDay1/)
+
+- [猿人学系列（二）第一届Web攻防第十二题](https://houkc.github.io/2021/02/26/yuanrenxueDay12/)
+- [猿人学系列（三）第一届Web攻防第十三题](https://houkc.github.io/2021/02/26/yuanrenxueDay13/)
+
 
 
 ## 0x02 设计模式
